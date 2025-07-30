@@ -1,0 +1,68 @@
+{
+  "name": "unimove-dapp-kit",
+  "version": "0.1.0",
+  "description": "A thin, Next.js-ready adapter layer to switch between Sui and IOTA dapp-kits at runtime with dynamic imports.",
+  "type": "module",
+  "license": "MIT",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "peerDependencies": {
+    "next": "^14.0.0 || ^15.0.0",
+    "react": "^18.2.0 || ^19.0.0",
+    "react-dom": "^18.2.0 || ^19.0.0",
+    "@tanstack/react-query": "^5.0.0",
+    "@mysten/dapp-kit": "^0.17.2",
+    "@iota/dapp-kit": "^0.5.0"
+  },
+  "dependencies": {},
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "sui",
+    "iota",
+    "dapp",
+    "nextjs",
+    "react",
+    "web3",
+    "sdk"
+  ],
+  "engines": {
+    "node": ">=18.18.0"
+  },
+  "scripts": {
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "check": "bun run lint && bun run typecheck",
+    "build": "tsup src/index.ts --dts --format esm,cjs --out-dir dist",
+    "clean": "rm -rf dist",
+    "prepare": "bun run clean && bun run build"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.1",
+    "@types/react": "^19.1.9",
+    "@types/react-dom": "^19.1.7",
+    "@typescript-eslint/eslint-plugin": "^8.39.0",
+    "@typescript-eslint/parser": "^8.39.0",
+    "eslint": "^9.32.0",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.2"
+  },
+  "overrides": {
+    "@mysten/dapp-kit": "^0.17.2",
+    "@iota/dapp-kit": "^0.5.0"
+  }
+}

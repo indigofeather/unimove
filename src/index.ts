@@ -1,12 +1,13 @@
 // Context and Provider
 export type { SupportedChain } from "./context";
 export { useChain } from "./context";
-export { UniversalProvider } from "./providers/UniversalProvider";
+export { ClientProvider } from "./providers/ClientProvider";
+export { WalletProvider } from "./providers/WalletProvider";
 
 // Components
 export { ConnectButton } from "./components/ConnectButton";
 export { ConnectModal } from "./components/ConnectModal";
-export { UniversalQuery } from "./components/UniversalQuery";
+export { ClientQuery } from "./components/ClientQuery";
 
 // Wallet Hooks
 export { useAccounts } from "./hooks/useAccounts";
@@ -23,6 +24,7 @@ export { useWallets } from "./hooks/useWallets";
 
 // Client Hooks
 export { useClient } from "./hooks/useClient";
+export { useClientQuery } from "./hooks/useClientQuery";
 export { useClientInfiniteQuery } from "./hooks/useClientInfiniteQuery";
 export { useClientMutation } from "./hooks/useClientMutation";
 export { useClientQueries } from "./hooks/useClientQueries";

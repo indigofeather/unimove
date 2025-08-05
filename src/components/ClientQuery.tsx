@@ -2,10 +2,12 @@
 
 import {
   type IotaRpcMethodName,
+  type IotaRpcMethods,
   type UseIotaClientQueryOptions,
 } from "@iota/dapp-kit";
 import {
   type SuiRpcMethodName,
+  type SuiRpcMethods,
   type UseSuiClientQueryOptions,
 } from "@mysten/dapp-kit";
 import dynamic from "next/dynamic";
@@ -22,7 +24,7 @@ const IotaQuery = dynamic(
   { ssr: false }
 );
 
-export function UniversalQuery<TData = unknown>(props: {
+export function ClientQuery<TData = unknown>(props: {
   method: string;
   params?: unknown;
   options?: unknown;
@@ -38,7 +40,9 @@ export function UniversalQuery<TData = unknown>(props: {
     return (
       <SuiQuery
         method={props.method as SuiRpcMethodName}
-        params={props.params as any}
+        params={
+          props.params as SuiRpcMethods[SuiRpcMethodName]["params"]
+        }
         options={
           props.options as UseSuiClientQueryOptions<SuiRpcMethodName, TData>
         }
@@ -57,7 +61,9 @@ export function UniversalQuery<TData = unknown>(props: {
   return (
     <IotaQuery
       method={props.method as IotaRpcMethodName}
-      params={props.params}
+      params={
+        props.params as IotaRpcMethods[IotaRpcMethodName]["params"]
+      }
       options={
         props.options as UseIotaClientQueryOptions<IotaRpcMethodName, TData>
       }

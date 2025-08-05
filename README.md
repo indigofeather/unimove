@@ -4,7 +4,7 @@ A thin, Next.js-ready adapter layer to switch between Sui and IOTA dapp-kits at 
 
 ## Features
 
-- ✅ **Chain Agnostic Components**: Use components like `ConnectButton`, `ConnectModal`, and `UniversalQuery` that automatically adapt to the selected chain.
+- ✅ **Chain Agnostic Components**: Use components like `ConnectButton`, `ConnectModal`, and `ClientQuery` that automatically adapt to the selected chain.
 - ✅ **Universal Hooks**: A single set of hooks (e.g., `useCurrentWallet`, `useAccounts`, `useSignAndExecuteTransactionBlock`) for interacting with both wallets.
 - ✅ **Dependency Injection**: The library is designed to be lightweight. You only need to install the SDKs for the chains you intend to support. The library uses dynamic imports to avoid bundling unused code.
 - ✅ **Runtime Switching**: Change the entire dApp's context from Sui to IOTA by changing a single `chain` prop.
@@ -38,7 +38,7 @@ bun add @iota/dapp-kit @iota/sdk @tanstack/react-query react react-dom next
 
 ## Quick Start
 
-Wrap your application with the `UniversalProvider` and pass the desired `chain` and network configurations.
+Wrap your application with the `ClientProvider` and nest a `WalletProvider` inside it. Pass the desired `chain` and network configurations to the `ClientProvider`.
 
 ### Example for Sui
 
@@ -47,7 +47,7 @@ In your `app/layout.tsx` or a root client component:
 ```tsx
 "use client";
 
-import { UniversalProvider } from "unimove-dapp-kit";
+import { ClientProvider, WalletProvider } from "unimove-dapp-kit";
 import { getFullnodeUrl } from "@mysten/sui/client";
 
 // Create your network configuration
@@ -65,14 +65,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <UniversalProvider
+        <ClientProvider
           chain="sui"
           networks={suiNetworks}
           defaultNetwork="testnet"
           onNetworkChange={(network) => console.log("Sui network changed to", network)}
         >
-          {children}
-        </UniversalProvider>
+          <WalletProvider>{children}</WalletProvider>
+        </ClientProvider>
       </body>
     </html>
   );
@@ -84,7 +84,7 @@ export default function RootLayout({
 ```tsx
 "use client";
 
-import { UniversalProvider } from "unimove-dapp-kit";
+import { ClientProvider, WalletProvider } from "unimove-dapp-kit";
 import { getFullnodeUrl } from "@iota/sdk";
 
 // Create your network configuration
@@ -101,13 +101,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <UniversalProvider
+        <ClientProvider
           chain="iota"
           networks={iotaNetworks}
           defaultNetwork="testnet"
         >
-          {children}
-        </UniversalProvider>
+          <WalletProvider>{children}</WalletProvider>
+        </ClientProvider>
       </body>
     </html>
   );
@@ -155,13 +155,14 @@ export function MyAwesomeComponent() {
 
 ### Providers
 
--   `UniversalProvider`: The main provider to wrap your application.
+-   `ClientProvider`: Provides chain-specific clients based on the `chain` prop.
+-   `WalletProvider`: Wraps the appropriate wallet provider for the active chain.
 
 ### Components
 
 -   `ConnectButton`: A button that shows the connection status and opens the `ConnectModal` on click.
 -   `ConnectModal`: A modal for selecting and connecting to a wallet.
--   `UniversalQuery`: A component for making chain-specific queries.
+-   `ClientQuery`: A component for making chain-specific queries.
 
 ### Hooks
 
@@ -172,6 +173,7 @@ export function MyAwesomeComponent() {
 -   `useConnectWallet()`: Returns a mutation function for connecting to a wallet.
 -   `useDisconnectWallet()`: Returns a mutation function for disconnecting from a wallet.
 -   `useSignAndExecuteTransactionBlock()`: Returns a mutation function for signing and executing a transaction.
+-   `useClientQuery()`: Fetches data from the active chain's RPC endpoint.
 -   ... and more!
 
 ## License

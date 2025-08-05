@@ -33,7 +33,7 @@ bun add @mysten/dapp-kit @mysten/sui @tanstack/react-query react react-dom next
 **For IOTA support:**
 
 ```bash
-bun add @iota/dapp-kit @iota/sdk @tanstack/react-query react react-dom next
+bun add @iota/dapp-kit @iota/iota-sdk @tanstack/react-query react react-dom next
 ```
 
 ## Quick Start
@@ -69,7 +69,9 @@ export default function RootLayout({
           chain="sui"
           networks={suiNetworks}
           defaultNetwork="testnet"
-          onNetworkChange={(network) => console.log("Sui network changed to", network)}
+          onNetworkChange={(network) =>
+            console.log("Sui network changed to", network)
+          }
         >
           <WalletProvider>{children}</WalletProvider>
         </ClientProvider>
@@ -85,7 +87,7 @@ export default function RootLayout({
 "use client";
 
 import { ClientProvider, WalletProvider } from "unimove-dapp-kit";
-import { getFullnodeUrl } from "@iota/sdk";
+import { getFullnodeUrl } from "@iota/iota-sdk";
 
 // Create your network configuration
 const iotaNetworks = {
@@ -155,26 +157,26 @@ export function MyAwesomeComponent() {
 
 ### Providers
 
--   `ClientProvider`: Provides chain-specific clients based on the `chain` prop.
--   `WalletProvider`: Wraps the appropriate wallet provider for the active chain.
+- `ClientProvider`: Provides chain-specific clients based on the `chain` prop.
+- `WalletProvider`: Wraps the appropriate wallet provider for the active chain.
 
 ### Components
 
--   `ConnectButton`: A button that shows the connection status and opens the `ConnectModal` on click.
--   `ConnectModal`: A modal for selecting and connecting to a wallet.
--   `ClientQuery`: A component for making chain-specific queries.
+- `ConnectButton`: A button that shows the connection status and opens the `ConnectModal` on click.
+- `ConnectModal`: A modal for selecting and connecting to a wallet.
+- `ClientQuery`: A component for making chain-specific queries.
 
 ### Hooks
 
--   `useChain()`: Returns the currently active chain (`"sui"` or `"iota"`).
--   `useAccounts()`: Returns a list of all accounts associated with the connected wallet.
--   `useCurrentAccount()`: Returns the currently selected account.
--   `useCurrentWallet()`: Returns the currently connected wallet.
--   `useConnectWallet()`: Returns a mutation function for connecting to a wallet.
--   `useDisconnectWallet()`: Returns a mutation function for disconnecting from a wallet.
--   `useSignAndExecuteTransactionBlock()`: Returns a mutation function for signing and executing a transaction.
--   `useClientQuery()`: Fetches data from the active chain's RPC endpoint.
--   ... and more!
+- `useChain()`: Returns the currently active chain (`"sui"` or `"iota"`).
+- `useAccounts()`: Returns a list of all accounts associated with the connected wallet.
+- `useCurrentAccount()`: Returns the currently selected account.
+- `useCurrentWallet()`: Returns the currently connected wallet.
+- `useConnectWallet()`: Returns a mutation function for connecting to a wallet.
+- `useDisconnectWallet()`: Returns a mutation function for disconnecting from a wallet.
+- `useSignAndExecuteTransactionBlock()`: Returns a mutation function for signing and executing a transaction.
+- `useClientQuery()`: Fetches data from the active chain's RPC endpoint.
+- ... and more!
 
 ## License
 

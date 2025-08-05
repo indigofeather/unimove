@@ -2,12 +2,8 @@
 
 import type { PropsWithChildren } from "react";
 import dynamic from "next/dynamic";
-import type {
-  IotaClientProviderProps,
-} from "@iota/dapp-kit";
-import type {
-  SuiClientProviderProps,
-} from "@mysten/dapp-kit";
+import type { IotaClientProviderProps } from "@iota/dapp-kit";
+import type { SuiClientProviderProps } from "@mysten/dapp-kit";
 
 import { ChainContext } from "../context";
 
@@ -47,6 +43,7 @@ type ClientProviderProps = PropsWithChildren<
 export function ClientProvider(props: ClientProviderProps) {
   if (props.chain === "sui") {
     const { networks, defaultNetwork, onNetworkChange, children } = props;
+
     return (
       <ChainContext.Provider value="sui">
         <SuiClientProviderAdapter
@@ -60,7 +57,9 @@ export function ClientProvider(props: ClientProviderProps) {
     );
   }
 
-  const { networks, defaultNetwork, network, onNetworkChange, children } = props;
+  const { networks, defaultNetwork, network, onNetworkChange, children } =
+    props;
+
   return (
     <ChainContext.Provider value="iota">
       <IotaClientProviderAdapter
@@ -74,4 +73,3 @@ export function ClientProvider(props: ClientProviderProps) {
     </ChainContext.Provider>
   );
 }
-

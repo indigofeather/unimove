@@ -22,24 +22,23 @@ const IotaWalletProviderAdapter = dynamic(
   { ssr: false }
 );
 
-type WalletProviderProps = PropsWithChildren<{
-  suiWalletProviderProps?: Omit<SuiWalletProviderProps, "children">;
-  iotaWalletProviderProps?: Omit<IotaWalletProviderProps, "children">;
-}>;
+type WalletProviderProps = PropsWithChildren<
+  Omit<SuiWalletProviderProps, "children"> &
+    Omit<IotaWalletProviderProps, "children">
+>;
 
 export function WalletProvider({
   children,
-  suiWalletProviderProps,
-  iotaWalletProviderProps,
+  ...props
 }: WalletProviderProps) {
   const chain = useChain();
 
   return chain === "sui" ? (
-    <SuiWalletProviderAdapter {...suiWalletProviderProps}>
+    <SuiWalletProviderAdapter {...props}>
       {children}
     </SuiWalletProviderAdapter>
   ) : (
-    <IotaWalletProviderAdapter {...iotaWalletProviderProps}>
+    <IotaWalletProviderAdapter {...props}>
       {children}
     </IotaWalletProviderAdapter>
   );

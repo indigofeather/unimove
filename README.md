@@ -181,6 +181,70 @@ export default function RootLayout({
 }
 ```
 
+### Full Example: Chain Switching with autoConnect
+
+The following example pre-initializes networks for both Sui and IOTA. It allows switching between chains while keeping `autoConnect` working for the active wallet.
+
+```tsx
+"use client";
+
+import "@mysten/dapp-kit/dist/index.css";
+import "@iota/dapp-kit/dist/index.css";
+import { MantineProvider } from "@mantine/core";
+import {
+  ClientProvider,
+  Networks,
+  unimoveSDK,
+  WalletProvider,
+} from "unimove-sdk";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useMemo } from "react";
+
+import { useChainStore } from "@/stores/chain";
+
+const queryClient = new QueryClient();
+
+// Pre-initialize networks for all chains
+const allNetworks: { sui: Networks; iota: Networks } = await initAllNetworks();
+
+async function initAllNetworks() {
+  const [suiSDK, iotaSDK] = await Promise.all([
+    unimoveSDK("sui"),
+    unimoveSDK("iota"),
+  ]);
+
+  return {
+    sui: {
+      testnet: { url: suiSDK.client.getFullnodeUrl("testnet") },
+      mainnet: { url: suiSDK.client.getFullnodeUrl("mainnet") },
+      devnet: { url: suiSDK.client.getFullnodeUrl("devnet") },
+    },
+    iota: {
+      testnet: { url: iotaSDK.client.getFullnodeUrl("testnet") },
+      mainnet: { url: iotaSDK.client.getFullnodeUrl("mainnet") },
+      devnet: { url: iotaSDK.client.getFullnodeUrl("devnet") },
+    },
+  };
+}
+
+export const Providers = ({ children }: { children: React.ReactNode }) => {
+  const { chain } = useChainStore();
+  const networks = useMemo(() => allNetworks[chain], [chain]);
+
+  return (
+    <MantineProvider forceColorScheme="dark">
+      <QueryClientProvider client={queryClient}>
+        <ClientProvider key={chain} chain={chain} networks={networks}>
+          <WalletProvider key={chain} autoConnect>
+            {children}
+          </WalletProvider>
+        </ClientProvider>
+      </QueryClientProvider>
+    </MantineProvider>
+  );
+};
+```
+
 ### Using the Components
 
 Once the provider is set up, you can use the universal components and hooks anywhere in your app.

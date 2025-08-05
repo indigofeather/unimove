@@ -7,7 +7,7 @@ import {
   type IotaClientProviderProps,
 } from "@iota/dapp-kit";
 
-type Networks = Record<string, { url: string }>;
+import type { Networks } from "../types";
 
 type IotaClientProviderAdapterProps = PropsWithChildren<{
   networks: Networks;
@@ -35,4 +35,3 @@ export function IotaClientProviderAdapter({
     </IotaClientProvider>
   );
 }
-

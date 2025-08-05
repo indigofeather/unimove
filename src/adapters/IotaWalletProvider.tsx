@@ -1,10 +1,7 @@
 "use client";
 
 import { type PropsWithChildren } from "react";
-import {
-  WalletProvider,
-  type WalletProviderProps,
-} from "@iota/dapp-kit";
+import { WalletProvider, type WalletProviderProps } from "@iota/dapp-kit";
 
 type IotaWalletProviderAdapterProps = PropsWithChildren<
   Omit<WalletProviderProps, "children">
@@ -16,4 +13,3 @@ export function IotaWalletProviderAdapter({
 }: IotaWalletProviderAdapterProps) {
   return <WalletProvider {...rest}>{children}</WalletProvider>;
 }
-

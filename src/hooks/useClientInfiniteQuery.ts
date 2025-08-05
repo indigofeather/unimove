@@ -7,8 +7,7 @@ import { useIotaClientInfiniteQuery } from "@iota/dapp-kit";
 import { useChain } from "../context";
 
 export type UseClientInfiniteQueryResult = ReturnType<
-  | typeof useSuiClientInfiniteQuery
-  | typeof useIotaClientInfiniteQuery
+  typeof useSuiClientInfiniteQuery | typeof useIotaClientInfiniteQuery
 >;
 
 export function useClientInfiniteQuery<TMethod extends string>(
@@ -35,8 +34,8 @@ export function useClientInfiniteQuery<TMethod extends string>(
     {
       ...(options as Parameters<typeof useIotaClientInfiniteQuery>[2]),
       enabled:
-        (options as Parameters<typeof useIotaClientInfiniteQuery>[2])?.enabled &&
-        chain === "iota",
+        (options as Parameters<typeof useIotaClientInfiniteQuery>[2])
+          ?.enabled && chain === "iota",
     }
   );
 

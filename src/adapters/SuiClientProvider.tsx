@@ -7,7 +7,7 @@ import {
   type SuiClientProviderProps,
 } from "@mysten/dapp-kit";
 
-type Networks = Record<string, { url: string }>;
+import type { Networks } from "../types";
 
 type SuiClientProviderAdapterProps = PropsWithChildren<{
   networks: Networks;
@@ -31,4 +31,3 @@ export function SuiClientProviderAdapter({
     </SuiClientProvider>
   );
 }
-

@@ -37,3 +37,8 @@ export { unimoveSDK } from "./sdk";
 
 // SDK Hook
 export { useUnimoveSDK } from "./hooks/useUnimoveSDK";
+
+// Types
+export type { Networks, ChainType, NetworkName } from "./types";
+
+

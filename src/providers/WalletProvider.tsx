@@ -27,20 +27,19 @@ type WalletProviderProps = PropsWithChildren<
     Omit<IotaWalletProviderProps, "children">
 >;
 
-export function WalletProvider({
-  children,
-  ...props
-}: WalletProviderProps) {
+export function WalletProvider({ children, ...props }: WalletProviderProps) {
   const chain = useChain();
 
+  // 使用 key 來確保切換鏈時正確重新掛載
+  const walletKey = `wallet-${chain}`;
+
   return chain === "sui" ? (
-    <SuiWalletProviderAdapter {...props}>
+    <SuiWalletProviderAdapter key={walletKey} {...props}>
       {children}
     </SuiWalletProviderAdapter>
   ) : (
-    <IotaWalletProviderAdapter {...props}>
+    <IotaWalletProviderAdapter key={walletKey} {...props}>
       {children}
     </IotaWalletProviderAdapter>
   );
 }
-

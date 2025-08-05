@@ -40,9 +40,7 @@ export function ClientQuery<TData = unknown>(props: {
     return (
       <SuiQuery
         method={props.method as SuiRpcMethodName}
-        params={
-          props.params as SuiRpcMethods[SuiRpcMethodName]["params"]
-        }
+        params={props.params as SuiRpcMethods[SuiRpcMethodName]["params"]}
         options={
           props.options as UseSuiClientQueryOptions<SuiRpcMethodName, TData>
         }
@@ -61,9 +59,7 @@ export function ClientQuery<TData = unknown>(props: {
   return (
     <IotaQuery
       method={props.method as IotaRpcMethodName}
-      params={
-        props.params as IotaRpcMethods[IotaRpcMethodName]["params"]
-      }
+      params={props.params as IotaRpcMethods[IotaRpcMethodName]["params"]}
       options={
         props.options as UseIotaClientQueryOptions<IotaRpcMethodName, TData>
       }

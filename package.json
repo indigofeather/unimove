@@ -1,7 +1,7 @@
 {
-  "name": "unimove-dapp-kit",
+  "name": "unimove-sdk",
   "version": "0.1.0",
-  "description": "A thin, Next.js-ready adapter layer to switch between Sui and IOTA dapp-kits at runtime with dynamic imports.",
+  "description": "A comprehensive SDK for building cross-chain dApps on Sui and IOTA with runtime chain switching, built-in UI components, and unified APIs.",
   "type": "module",
   "license": "MIT",
   "main": "./dist/index.cjs",
@@ -34,10 +34,15 @@
     "sui",
     "iota",
     "dapp",
+    "dapp-kit",
+    "cross-chain",
+    "multi-chain",
     "nextjs",
     "react",
     "web3",
-    "sdk"
+    "sdk",
+    "move",
+    "wallet"
   ],
   "engines": {
     "node": ">=18.18.0"

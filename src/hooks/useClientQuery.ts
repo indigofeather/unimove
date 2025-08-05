@@ -7,8 +7,7 @@ import { useIotaClientQuery } from "@iota/dapp-kit";
 import { useChain } from "../context";
 
 export type UseClientQueryResult = ReturnType<
-  | typeof useSuiClientQuery
-  | typeof useIotaClientQuery
+  typeof useSuiClientQuery | typeof useIotaClientQuery
 >;
 
 export function useClientQuery<TMethod extends string>(
@@ -45,4 +44,3 @@ export function useClientQuery<TMethod extends string>(
     [chain, suiResult, iotaResult]
   );
 }
-

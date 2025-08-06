@@ -1,9 +1,9 @@
 {
   "name": "unimove-sdk",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A comprehensive SDK for building cross-chain dApps on Sui and IOTA with runtime chain switching, built-in UI components, and unified APIs.",
   "type": "module",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -28,7 +28,8 @@
   "files": [
     "dist",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "NOTICE"
   ],
   "keywords": [
     "sui",

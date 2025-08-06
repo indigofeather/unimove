@@ -70,12 +70,12 @@ In your `app/layout.tsx` or a root client component:
 ```tsx
 "use client";
 
-import { 
-  ClientProvider, 
-  WalletProvider, 
+import {
+  ClientProvider,
+  WalletProvider,
   unimoveSDK,
   type Networks,
-  type ChainType 
+  type ChainType,
 } from "unimove-sdk";
 import { useEffect, useState } from "react";
 
@@ -91,7 +91,7 @@ export default function RootLayout({
     const initNetworks = async () => {
       const sdk = await unimoveSDK(chain);
       const { getFullnodeUrl } = sdk.client;
-      
+
       setNetworks({
         mainnet: { url: getFullnodeUrl("mainnet") },
         testnet: { url: getFullnodeUrl("testnet") },
@@ -130,12 +130,12 @@ export default function RootLayout({
 ```tsx
 "use client";
 
-import { 
-  ClientProvider, 
-  WalletProvider, 
+import {
+  ClientProvider,
+  WalletProvider,
   unimoveSDK,
   type Networks,
-  type ChainType 
+  type ChainType,
 } from "unimove-sdk";
 import { useEffect, useState } from "react";
 
@@ -151,7 +151,7 @@ export default function RootLayout({
     const initNetworks = async () => {
       const sdk = await unimoveSDK(chain);
       const { getFullnodeUrl } = sdk.client;
-      
+
       setNetworks({
         mainnet: { url: getFullnodeUrl("mainnet") },
         testnet: { url: getFullnodeUrl("testnet") },
@@ -387,6 +387,7 @@ function ChainSwitcher() {
 ### Hooks
 
 #### Chain & Wallet Management
+
 - `useChain()`: Returns the currently active chain (`"sui"` or `"iota"`)
 - `useCurrentAccount()`: Returns the currently selected account
 - `useCurrentWallet()`: Returns the currently connected wallet
@@ -398,6 +399,7 @@ function ChainSwitcher() {
 - `useWallets()`: Returns a list of all available wallets
 
 #### Transactions & Queries
+
 - `useSignAndExecuteTransaction()`: Returns a mutation function for signing and executing transactions
 - `useClientQuery()`: Unified query hook that works with both Sui and IOTA clients
 - `useClientInfiniteQuery()`: Unified infinite query hook for paginated data
@@ -407,6 +409,7 @@ function ChainSwitcher() {
 - `useSignTransaction()`: Sign transactions without executing
 
 #### Network & Client
+
 - `useClient()`: Access the underlying chain client directly
 - `useUnimoveSDK()`: Hook version of unimoveSDK that returns SDK modules with loading and error states
 
@@ -418,11 +421,11 @@ function ChainSwitcher() {
 "use client";
 
 import { useState } from "react";
-import { 
-  unimoveSDK, 
-  useCurrentAccount, 
+import {
+  unimoveSDK,
+  useCurrentAccount,
   useClientQuery,
-  ConnectButton 
+  ConnectButton,
 } from "unimove-sdk";
 
 function PortfolioTracker() {
@@ -451,13 +454,13 @@ function PortfolioTracker() {
       <div>
         <ConnectButton />
         <div>
-          <button 
+          <button
             onClick={() => setSelectedChain("sui")}
             disabled={selectedChain === "sui"}
           >
             Sui
           </button>
-          <button 
+          <button
             onClick={() => setSelectedChain("iota")}
             disabled={selectedChain === "iota"}
           >
@@ -470,7 +473,7 @@ function PortfolioTracker() {
         <div>
           <h2>{selectedChain.toUpperCase()} Portfolio</h2>
           <p>Address: {account.address}</p>
-          
+
           {isLoading ? (
             <p>Loading balance...</p>
           ) : balance ? (
@@ -498,10 +501,10 @@ function PortfolioTracker() {
 ### Transaction Example
 
 ```tsx
-import { 
+import {
   useSignAndExecuteTransaction,
   useCurrentAccount,
-  unimoveSDK 
+  unimoveSDK,
 } from "unimove-sdk";
 
 function TransferComponent() {
@@ -516,7 +519,7 @@ function TransferComponent() {
     const { transactions } = sdk;
 
     const tx = new transactions.Transaction();
-    
+
     // Add your transaction logic here
     tx.transferObjects(
       [tx.gas],
@@ -570,7 +573,7 @@ function useNetworkConfig(chain: ChainType) {
     // Cache the SDK instance
     const sdk = await unimoveSDK(chain);
     const { getFullnodeUrl } = sdk.client;
-    
+
     return {
       mainnet: { url: getFullnodeUrl("mainnet") },
       testnet: { url: getFullnodeUrl("testnet") },
@@ -590,7 +593,7 @@ import { useDeferredValue } from "react";
 function MyApp() {
   const [chain, setChain] = useState<ChainType>("sui");
   const deferredChain = useDeferredValue(chain); // Debounce chain changes
-  
+
   // Use deferredChain for network initialization
   // This prevents rapid switching from causing multiple requests
 }
@@ -610,13 +613,32 @@ function ChainAwareWalletProvider({ children }: { children: React.ReactNode }) {
   }, [chain]);
 
   return (
-    <WalletProvider autoConnect={!isChainSwitching}>
-      {children}
-    </WalletProvider>
+    <WalletProvider autoConnect={!isChainSwitching}>{children}</WalletProvider>
   );
 }
 ```
 
 ## License
 
-This project is licensed under the MIT License.
+This project is licensed under the Apache License 2.0.
+
+Copyright 2025 Lance He <indigofeather@gmail.com>
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+### Third-Party Licenses
+
+This project includes dependencies that are also licensed under Apache 2.0:
+
+- `@mysten/dapp-kit` and `@mysten/sui` - Apache 2.0 License
+- `@iota/dapp-kit` and `@iota/iota-sdk` - Apache 2.0 License

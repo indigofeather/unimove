@@ -234,10 +234,8 @@ export const Providers = ({ children }: { children: React.ReactNode }) => {
   return (
     <MantineProvider forceColorScheme="dark">
       <QueryClientProvider client={queryClient}>
-        <ClientProvider key={chain} chain={chain} networks={networks}>
-          <WalletProvider key={chain} autoConnect>
-            {children}
-          </WalletProvider>
+        <ClientProvider chain={chain} networks={networks}>
+          <WalletProvider autoConnect>{children}</WalletProvider>
         </ClientProvider>
       </QueryClientProvider>
     </MantineProvider>

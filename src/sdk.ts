@@ -49,91 +49,124 @@ type IotaModules = {
   secp256r1Keypair: typeof IotaSecp256r1Keypair;
 };
 
+// SDK 快取，避免重複載入
+const sdkCache = new Map<string, Promise<SuiModules | IotaModules>>();
+
 export async function unimoveSDK(
   chain: "sui" | "iota"
 ): Promise<SuiModules | IotaModules> {
-  switch (chain) {
-    case "sui": {
-      const [
-        client,
-        bcs,
-        transactions,
-        verify,
-        cryptography,
-        multisig,
-        utils,
-        faucet,
-        ed25519Keypair,
-        secp256k1Keypair,
-        secp256r1Keypair,
-      ] = await Promise.all([
-        import("@mysten/sui/client"),
-        import("@mysten/sui/bcs"),
-        import("@mysten/sui/transactions"),
-        import("@mysten/sui/verify"),
-        import("@mysten/sui/cryptography"),
-        import("@mysten/sui/multisig"),
-        import("@mysten/sui/utils"),
-        import("@mysten/sui/faucet"),
-        import("@mysten/sui/keypairs/ed25519"),
-        import("@mysten/sui/keypairs/secp256k1"),
-        import("@mysten/sui/keypairs/secp256r1"),
-      ]);
-      return {
-        client,
-        bcs,
-        transactions,
-        verify,
-        cryptography,
-        multisig,
-        utils,
-        faucet,
-        ed25519Keypair,
-        secp256k1Keypair,
-        secp256r1Keypair,
-      };
+  // 檢查快取
+  if (sdkCache.has(chain)) {
+    return sdkCache.get(chain)!;
+  }
+
+  // 創建載入 Promise 並加入快取
+  const loadPromise = loadSDK(chain);
+  sdkCache.set(chain, loadPromise);
+
+  return loadPromise;
+}
+
+async function loadSDK(
+  chain: "sui" | "iota"
+): Promise<SuiModules | IotaModules> {
+  try {
+    switch (chain) {
+      case "sui": {
+        const [
+          client,
+          bcs,
+          transactions,
+          verify,
+          cryptography,
+          multisig,
+          utils,
+          faucet,
+          ed25519Keypair,
+          secp256k1Keypair,
+          secp256r1Keypair,
+        ] = await Promise.all([
+          import("@mysten/sui/client"),
+          import("@mysten/sui/bcs"),
+          import("@mysten/sui/transactions"),
+          import("@mysten/sui/verify"),
+          import("@mysten/sui/cryptography"),
+          import("@mysten/sui/multisig"),
+          import("@mysten/sui/utils"),
+          import("@mysten/sui/faucet"),
+          import("@mysten/sui/keypairs/ed25519"),
+          import("@mysten/sui/keypairs/secp256k1"),
+          import("@mysten/sui/keypairs/secp256r1"),
+        ]);
+        return {
+          client,
+          bcs,
+          transactions,
+          verify,
+          cryptography,
+          multisig,
+          utils,
+          faucet,
+          ed25519Keypair,
+          secp256k1Keypair,
+          secp256r1Keypair,
+        };
+      }
+      case "iota": {
+        const [
+          client,
+          bcs,
+          transactions,
+          verify,
+          cryptography,
+          multisig,
+          utils,
+          faucet,
+          ed25519Keypair,
+          secp256k1Keypair,
+          secp256r1Keypair,
+        ] = await Promise.all([
+          import("@iota/iota-sdk/client"),
+          import("@iota/iota-sdk/bcs"),
+          import("@iota/iota-sdk/transactions"),
+          import("@iota/iota-sdk/verify"),
+          import("@iota/iota-sdk/cryptography"),
+          import("@iota/iota-sdk/multisig"),
+          import("@iota/iota-sdk/utils"),
+          import("@iota/iota-sdk/faucet"),
+          import("@iota/iota-sdk/keypairs/ed25519"),
+          import("@iota/iota-sdk/keypairs/secp256k1"),
+          import("@iota/iota-sdk/keypairs/secp256r1"),
+        ]);
+        return {
+          client,
+          bcs,
+          transactions,
+          verify,
+          cryptography,
+          multisig,
+          utils,
+          faucet,
+          ed25519Keypair,
+          secp256k1Keypair,
+          secp256r1Keypair,
+        };
+      }
+      default:
+        throw new Error(`Unsupported chain: ${chain}`);
     }
-    case "iota": {
-      const [
-        client,
-        bcs,
-        transactions,
-        verify,
-        cryptography,
-        multisig,
-        utils,
-        faucet,
-        ed25519Keypair,
-        secp256k1Keypair,
-        secp256r1Keypair,
-      ] = await Promise.all([
-        import("@iota/iota-sdk/client"),
-        import("@iota/iota-sdk/bcs"),
-        import("@iota/iota-sdk/transactions"),
-        import("@iota/iota-sdk/verify"),
-        import("@iota/iota-sdk/cryptography"),
-        import("@iota/iota-sdk/multisig"),
-        import("@iota/iota-sdk/utils"),
-        import("@iota/iota-sdk/faucet"),
-        import("@iota/iota-sdk/keypairs/ed25519"),
-        import("@iota/iota-sdk/keypairs/secp256k1"),
-        import("@iota/iota-sdk/keypairs/secp256r1"),
-      ]);
-      return {
-        client,
-        bcs,
-        transactions,
-        verify,
-        cryptography,
-        multisig,
-        utils,
-        faucet,
-        ed25519Keypair,
-        secp256k1Keypair,
-        secp256r1Keypair,
-      };
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      error.message.includes("Cannot resolve module")
+    ) {
+      throw new Error(
+        `Failed to load ${chain} SDK. Please ensure you have installed the required peer dependencies:\n` +
+          `For Sui: bun add @mysten/dapp-kit @mysten/sui\n` +
+          `For IOTA: bun add @iota/dapp-kit @iota/iota-sdk\n` +
+          `Original error: ${error.message}`
+      );
     }
-    default:
-      throw new Error(`Unsupported chain: ${chain}`);
+    throw error;
   }
 }

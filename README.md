@@ -2,15 +2,95 @@
 
 A comprehensive SDK for building cross-chain decentralized applications on Sui and IOTA. `unimove-sdk` combines the power of dApp-kit UI components with robust SDK functionality, enabling you to build applications that seamlessly switch between chains at runtime with a unified API.
 
-## Features
+## ✨ Features
 
-- 🔗 **Cross-Chain SDK**: Complete SDK functionality for both Sui and IOTA with unified APIs for queries, transactions, and account management
-- 🎨 **Built-in UI Components**: Ready-to-use components like `ConnectButton`, `ConnectModal`, and `ClientQuery` that automatically adapt to the selected chain
-- 🔄 **Runtime Chain Switching**: Seamlessly switch between Sui and IOTA at runtime with a single `chain` prop change
-- 🪝 **Universal Hooks**: Consistent hooks API (`useCurrentWallet`, `useAccounts`, `useSignAndExecuteTransaction`) that works across both chains
-- 📦 **Lightweight & Modular**: Dynamic imports ensure you only bundle the SDKs you actually use
-- ⚡ **Next.js Optimized**: Built with SSR compatibility and optimal performance in mind
-- 🔧 **TypeScript First**: Full TypeScript support with comprehensive type definitions
+### 🔗 **Cross-Chain SDK with Unified API**
+
+- Complete SDK functionality for both Sui and IOTA with **9 unified methods** that work identically across chains
+- **11 modules** with full type support (client, bcs, transactions, verify, cryptography, multisig, utils, faucet, keypairs)
+- Seamless runtime chain switching with a single `chain` prop change
+- Dynamic imports ensure you only bundle the SDKs you actually use
+
+### 🔧 **Industry-Leading TypeScript Support**
+
+- **Complete type safety** with zero `any` types throughout the entire SDK
+- **21 exported types** providing comprehensive type definitions for all use cases
+- **Precise type inference** based on chain selection - TypeScript knows exactly what types you're working with
+- **Conditional types** that provide chain-specific IntelliSense and compile-time safety
+
+### 🪝 **Enhanced Hooks System (17 Total)**
+
+- All hooks support **both automatic and manual chain selection** with exact type inference
+- **Wallet Management**: `useCurrentAccount`, `useCurrentWallet`, `useAccounts`, `useConnectWallet`, `useDisconnectWallet`, `useAutoConnectWallet`, `useSwitchAccount`, `useWallets`
+- **Transactions & Queries**: `useSignAndExecuteTransaction`, `useClientQuery`, `useClientInfiniteQuery`, `useClientMutation`, `useClientQueries`, `useSignPersonalMessage`, `useSignTransaction`
+- **Network & Client**: `useClient`, `useUnimoveSDK`
+
+### 🎨 **Built-in UI Components**
+
+- Ready-to-use components like `ConnectButton`, `ConnectModal`, and `ClientQuery`
+- Components automatically adapt to the selected chain
+- Universal theming system with cross-chain theme support
+- SSR-compatible with Next.js optimization
+
+### 📦 **Developer Experience**
+
+- **Lightweight & Modular**: Only bundle what you use
+- **Performance Optimized**: SDK caching and efficient loading
+- **Backward Compatible**: Seamless upgrade path
+- **Comprehensive Examples**: Real-world usage patterns and best practices
+
+## 🚀 Quick Examples
+
+### Basic SDK Usage with Type Safety
+
+```typescript
+import { unimoveSDK } from "unimove-sdk/server";
+
+// ✅ Precise type inference based on chain
+const iotaSDK = await unimoveSDK("iota"); // Type: UnimoveSDK<'iota'>
+const suiSDK = await unimoveSDK("sui"); // Type: UnimoveSDK<'sui'>
+
+// ✅ Unified API - same methods for both chains
+const iotaClient = iotaSDK.createClient({
+  url: iotaSDK.getFullnodeUrl("testnet"),
+});
+const suiClient = suiSDK.createClient({
+  url: suiSDK.getFullnodeUrl("testnet"),
+});
+
+// ✅ 9 unified methods available
+const transaction = iotaSDK.createTransaction();
+const keypair = iotaSDK.createEd25519Keypair();
+const structTag = iotaSDK.parseStructTag("0x2::coin::Coin<0x2::iota::IOTA>");
+```
+
+### Hooks with Type Safety
+
+```tsx
+import {
+  useCurrentAccount,
+  useClientQuery,
+  useSignAndExecuteTransaction,
+} from "unimove-sdk";
+
+function MyComponent() {
+  // ✅ Automatic chain selection with precise types
+  const account = useCurrentAccount(); // Type inferred from context
+
+  // ✅ Manual chain selection with exact types
+  const iotaAccount = useCurrentAccount<"iota">("iota"); // Type: IotaAccount
+  const suiAccount = useCurrentAccount<"sui">("sui"); // Type: SuiAccount
+
+  // ✅ Type-safe queries
+  const { data: balance } = useClientQuery(
+    "getBalance",
+    { owner: account?.address },
+    { enabled: !!account?.address }
+  );
+
+  return <div>Balance: {balance?.totalBalance}</div>;
+}
+```
 
 ## Installation
 
@@ -24,25 +104,54 @@ npm install unimove-sdk
 yarn add unimove-sdk
 ```
 
+## 📚 Examples
+
+Comprehensive examples are available in the [`/examples`](./examples/) directory:
+
+- **[Basic Setup](./examples/basic-setup/)** - SDK initialization and unified API usage
+- **[Hooks Usage](./examples/hooks-usage/)** - All 17 hooks with type safety demonstrations
+- **[Multi-Chain App](./examples/multi-chain/)** - Complete multi-chain application with runtime switching
+- **[Portfolio Tracker](./examples/portfolio-tracker/)** - Real-world multi-chain portfolio example
+- **[Type Safety](./examples/type-safety/)** - Advanced TypeScript integration patterns
+
 ## TypeScript Support
 
-The SDK provides comprehensive TypeScript support with exported types:
+The SDK provides **industry-leading TypeScript support** with 21 exported types and zero `any` usage:
 
 ```tsx
-import type { Networks, ChainType, NetworkName } from "unimove-sdk";
+import type {
+  // SDK Core Types
+  UnimoveSDK,
+  UnimoveClient,
+  UnimoveTransaction,
 
-// Define your network configuration with proper typing
+  // Configuration Types
+  Networks,
+  ChainType,
+  NetworkName,
+  UnimoveClientConfig,
+
+  // Hook Types (with precise inference)
+  UnimoveCurrentAccountResult,
+  UnimoveClientQueryResult,
+
+  // Utility Types
+  UnimoveStructTag,
+  UnimoveKeypairConfig,
+} from "unimove-sdk";
+
+// ✅ Precise type inference
+const sdk: UnimoveSDK<"iota"> = await unimoveSDK("iota");
+const client: UnimoveClient<"iota"> = sdk.createClient({
+  url: "https://api.testnet.iota.cafe",
+});
+
+// ✅ Type-safe configuration
 const networks: Networks = {
   mainnet: { url: "https://fullnode.mainnet.sui.io:443" },
   testnet: { url: "https://fullnode.testnet.sui.io:443" },
   devnet: { url: "https://fullnode.devnet.sui.io:443" },
 };
-
-// Type-safe chain selection
-const chain: ChainType = "sui"; // or "iota"
-
-// Network name validation
-const defaultNetwork: NetworkName = "testnet";
 ```
 
 Next, install the peer dependencies for the chains you want to support.
@@ -297,31 +406,57 @@ export function MyAwesomeComponent() {
 
 ## SDK Usage
 
-### Direct SDK Access
+### Unified SDK API (9 Methods)
 
-You can also use the SDK directly for more advanced use cases:
+The SDK provides **9 unified methods** that work identically across both chains:
 
 ```tsx
-import { unimoveSDK } from "unimove-sdk";
+import { unimoveSDK } from "unimove-sdk/server";
 
-// Initialize SDK for a specific chain
-const sdk = await unimoveSDK("sui");
+// ✅ Initialize with precise types
+const sdk = await unimoveSDK("iota"); // Type: UnimoveSDK<'iota'>
 
-// Access client and other modules
-const { client, transactions, bcs, utils } = sdk;
+// ✅ Unified Client Operations
+const client = sdk.createClient({ url: sdk.getFullnodeUrl("testnet") });
 
-// Query blockchain data
-const objects = await client.getOwnedObjects({
-  owner: "0x...",
-});
+// ✅ Unified Transaction Operations
+const transaction = sdk.createTransaction();
 
-// Access chain-specific utilities
-const coinMetadata = await client.getCoinMetadata({
-  coinType: "0x2::sui::SUI",
-});
+// ✅ Unified Keypair Operations
+const ed25519Keypair = sdk.createEd25519Keypair();
+const secp256k1Keypair = sdk.createSecp256k1Keypair();
+const secp256r1Keypair = sdk.createSecp256r1Keypair();
 
-// Create transactions
-const tx = new transactions.Transaction();
+// ✅ Unified Utility Operations
+const structTag = sdk.parseStructTag("0x2::coin::Coin<0x2::iota::IOTA>");
+const normalizedTag = sdk.normalizeStructTag(structTag);
+
+// ✅ Unified BCS Operations
+const serialized = sdk.bcsSerialize.serialize("address", "0x123...");
+
+// ✅ Direct module access (all 11 modules with proper types)
+const { client: clientModule, bcs, transactions, utils, cryptography } = sdk;
+```
+
+### Complete Type Coverage
+
+Every SDK module has precise type definitions:
+
+```tsx
+// ✅ All modules properly typed
+const modules = {
+  client: sdk.client, // typeof IotaClient
+  bcs: sdk.bcs, // typeof IotaBcs
+  transactions: sdk.transactions, // typeof IotaTransactions
+  verify: sdk.verify, // typeof IotaVerify
+  cryptography: sdk.cryptography, // typeof IotaCryptography
+  multisig: sdk.multisig, // typeof IotaMultisig
+  utils: sdk.utils, // typeof IotaUtils
+  faucet: sdk.faucet, // typeof IotaFaucet
+  ed25519Keypair: sdk.ed25519Keypair, // typeof IotaEd25519Keypair
+  secp256k1Keypair: sdk.secp256k1Keypair, // typeof IotaSecp256k1Keypair
+  secp256r1Keypair: sdk.secp256r1Keypair, // typeof IotaSecp256r1Keypair
+};
 ```
 
 ### Dynamic Chain Switching
@@ -382,34 +517,51 @@ function ChainSwitcher() {
 - `iotaLightTheme`: Light theme specifically for IOTA
 - Theme types: `UniversalTheme`, `UniversalThemeVars`, `UniversalDynamicTheme` for cross-chain theming
 
-### Hooks
+### Hooks (17 Total)
+
+All hooks support **both automatic and manual chain selection** with **precise type inference**:
 
 #### Chain & Wallet Management
 
 - `useChain()`: Returns the currently active chain (`"sui"` or `"iota"`)
-- `useCurrentAccount()`: Returns the currently selected account
-- `useCurrentWallet()`: Returns the currently connected wallet
-- `useAccounts()`: Returns a list of all accounts associated with the connected wallet
-- `useConnectWallet()`: Returns a mutation function for connecting to a wallet
-- `useDisconnectWallet()`: Returns a mutation function for disconnecting from a wallet
-- `useAutoConnectWallet()`: Automatically connects to a previously connected wallet
-- `useSwitchAccount()`: Returns a mutation function for switching between accounts
-- `useWallets()`: Returns a list of all available wallets
+- `useCurrentAccount<T>()`: Returns the currently selected account with exact type
+- `useCurrentWallet<T>()`: Returns the currently connected wallet with exact type
+- `useAccounts<T>()`: Returns accounts list with precise typing
+- `useConnectWallet<T>()`: Connect to wallet with type-safe operations
+- `useDisconnectWallet<T>()`: Disconnect with proper error handling
+- `useAutoConnectWallet<T>()`: Auto-connect with chain-specific types
+- `useSwitchAccount<T>()`: Switch accounts with type safety
+- `useWallets<T>()`: Get available wallets with precise types
 
 #### Transactions & Queries
 
-- `useSignAndExecuteTransaction()`: Returns a mutation function for signing and executing transactions
-- `useClientQuery()`: Unified query hook that works with both Sui and IOTA clients
-- `useClientInfiniteQuery()`: Unified infinite query hook for paginated data
-- `useClientMutation()`: Unified mutation hook for client operations
-- `useClientQueries()`: Execute multiple queries in parallel
-- `useSignPersonalMessage()`: Sign arbitrary messages with the connected wallet
-- `useSignTransaction()`: Sign transactions without executing
+- `useSignAndExecuteTransaction<T>()`: Sign and execute with exact transaction types
+- `useClientQuery<T>()`: Unified queries with chain-specific return types
+- `useClientInfiniteQuery<T>()`: Infinite queries with precise pagination types
+- `useClientMutation<T>()`: Mutations with type-safe operations
+- `useClientQueries<T>()`: Parallel queries with exact result types
+- `useSignPersonalMessage<T>()`: Message signing with chain-specific types
+- `useSignTransaction<T>()`: Transaction signing with precise types
 
 #### Network & Client
 
-- `useClient()`: Access the underlying chain client directly
-- `useUnimoveSDK()`: Hook version of unimoveSDK that returns SDK modules with loading and error states
+- `useClient<T>()`: Access client with exact chain types (IotaClient | SuiClient)
+- `useUnimoveSDK<T>()`: SDK access with complete type safety
+
+#### Usage Examples
+
+```tsx
+// ✅ Automatic chain selection (from context)
+const account = useCurrentAccount(); // Type inferred from ChainContext
+
+// ✅ Manual chain selection (precise types)
+const iotaAccount = useCurrentAccount<"iota">("iota"); // Type: IotaAccount
+const suiAccount = useCurrentAccount<"sui">("sui"); // Type: SuiAccount
+
+// ✅ Type-safe operations
+const { mutate: signTx } = useSignAndExecuteTransaction<"iota">("iota");
+signTx({ transaction: iotaTransaction }); // Fully typed
+```
 
 ## Advanced Examples
 
@@ -640,3 +792,92 @@ This project includes dependencies that are also licensed under Apache 2.0:
 
 - `@mysten/dapp-kit` and `@mysten/sui` - Apache 2.0 License
 - `@iota/dapp-kit` and `@iota/iota-sdk` - Apache 2.0 License
+
+## 🔧 Advanced Usage
+
+### Custom Hook Creation
+
+Create your own hooks with full type safety:
+
+```tsx
+import { useClientQuery, type UnimoveClientQueryResult } from "unimove-sdk";
+
+function useTokenBalance<T extends "sui" | "iota">(
+  owner: string,
+  coinType: string,
+  chain?: T
+): UnimoveClientQueryResult<T> {
+  return useClientQuery(
+    "getBalance",
+    { owner, coinType },
+    { enabled: !!owner },
+    chain
+  );
+}
+```
+
+### Multi-Chain State Management
+
+```tsx
+import { create } from "zustand";
+import type { ChainType, UnimoveSDK } from "unimove-sdk";
+
+interface MultiChainStore {
+  currentChain: ChainType;
+  sdks: Record<ChainType, UnimoveSDK<ChainType> | null>;
+  switchChain: (chain: ChainType) => void;
+  initializeSDK: (chain: ChainType) => Promise<void>;
+}
+
+const useMultiChainStore = create<MultiChainStore>((set, get) => ({
+  currentChain: "sui",
+  sdks: { sui: null, iota: null },
+
+  switchChain: (chain) => set({ currentChain: chain }),
+
+  initializeSDK: async (chain) => {
+    const sdk = await unimoveSDK(chain);
+    set((state) => ({
+      sdks: { ...state.sdks, [chain]: sdk },
+    }));
+  },
+}));
+```
+
+## 📈 Performance Optimizations
+
+### SDK Caching
+
+The SDK automatically caches instances to prevent redundant loading:
+
+```tsx
+// ✅ These calls reuse the same SDK instance
+const sdk1 = await unimoveSDK("iota");
+const sdk2 = await unimoveSDK("iota"); // Returns cached instance
+```
+
+### Selective Module Loading
+
+Only import what you need for optimal bundle size:
+
+```tsx
+// ✅ Import only specific hooks
+import { useCurrentAccount, useClientQuery } from "unimove-sdk";
+
+// ✅ Import only specific types
+import type { UnimoveClient, UnimoveTransaction } from "unimove-sdk";
+```
+
+## 🤝 Contributing
+
+We welcome contributions! Please see our [Contributing Guide](./CONTRIBUTING.md) for details.
+
+### Development Setup
+
+```bash
+git clone https://github.com/your-org/unimove-sdk.git
+cd unimove-sdk
+npm install
+npm run build
+npm run test
+```

@@ -6,15 +6,37 @@ import { useMemo } from "react";
 
 import { useChain } from "../context";
 
-export type UseClientMutationResult = ReturnType<
-  typeof useSuiClientMutation | typeof useIotaClientMutation
->;
+// 精確的類型定義
+export type UnimoveClientMutationResult<T extends "sui" | "iota"> =
+  T extends "sui"
+    ? ReturnType<typeof useSuiClientMutation>
+    : ReturnType<typeof useIotaClientMutation>;
 
+// 重載函數定義
 export function useClientMutation<TMethod extends string>(
   method: TMethod,
   options?: unknown
-): UseClientMutationResult {
-  const chain = useChain();
+): UnimoveClientMutationResult<"sui" | "iota">;
+
+export function useClientMutation<
+  TMethod extends string,
+  T extends "sui" | "iota",
+>(
+  method: TMethod,
+  options?: unknown,
+  chain?: T
+): UnimoveClientMutationResult<T>;
+
+export function useClientMutation<
+  TMethod extends string,
+  T extends "sui" | "iota",
+>(
+  method: TMethod,
+  options?: unknown,
+  chain?: T
+): UnimoveClientMutationResult<T> {
+  const contextChain = useChain();
+  const finalChain = chain || contextChain;
 
   // 始終調用兩個 hooks，但使用 enabled 來控制哪個實際執行
   const suiResult = useSuiClientMutation(
@@ -29,6 +51,13 @@ export function useClientMutation<TMethod extends string>(
 
   // 使用 useMemo 來返回對應鏈的結果
   return useMemo(() => {
-    return chain === "sui" ? suiResult : iotaResult;
-  }, [chain, suiResult, iotaResult]);
+    return (
+      finalChain === "sui" ? suiResult : iotaResult
+    ) as UnimoveClientMutationResult<T>;
+  }, [finalChain, suiResult, iotaResult]);
 }
+
+// 向後兼容的類型別名
+export type UseClientMutationResult = UnimoveClientMutationResult<
+  "sui" | "iota"
+>;

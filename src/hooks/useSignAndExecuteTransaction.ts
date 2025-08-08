@@ -5,17 +5,32 @@ import { useSignAndExecuteTransaction as useIotaSignAndExecuteTransaction } from
 
 import { useChain } from "../context";
 
-export type UseSignAndExecuteTransactionResult = ReturnType<
-  | typeof useSuiSignAndExecuteTransaction
-  | typeof useIotaSignAndExecuteTransaction
+// 精確的類型定義
+export type UnimoveSignAndExecuteTransactionResult<T extends "sui" | "iota"> =
+  T extends "sui"
+    ? ReturnType<typeof useSuiSignAndExecuteTransaction>
+    : ReturnType<typeof useIotaSignAndExecuteTransaction>;
+
+// 重載函數定義
+export function useSignAndExecuteTransaction(): UnimoveSignAndExecuteTransactionResult<
+  "sui" | "iota"
 >;
+export function useSignAndExecuteTransaction<T extends "sui" | "iota">(
+  chain?: T
+): UnimoveSignAndExecuteTransactionResult<T>;
+export function useSignAndExecuteTransaction<T extends "sui" | "iota">(
+  chain?: T
+): UnimoveSignAndExecuteTransactionResult<T> {
+  const contextChain = useChain();
+  const finalChain = chain || contextChain;
 
-export function useSignAndExecuteTransaction(): UseSignAndExecuteTransactionResult {
-  const chain = useChain();
-  const useSignAndExecuteTransactionHook =
-    chain === "sui"
-      ? useSuiSignAndExecuteTransaction
-      : useIotaSignAndExecuteTransaction;
+  if (finalChain === "sui") {
+    return useSuiSignAndExecuteTransaction() as UnimoveSignAndExecuteTransactionResult<T>;
+  }
 
-  return useSignAndExecuteTransactionHook();
+  return useIotaSignAndExecuteTransaction() as UnimoveSignAndExecuteTransactionResult<T>;
 }
+
+// 向後兼容的類型別名
+export type UseSignAndExecuteTransactionResult =
+  UnimoveSignAndExecuteTransactionResult<"sui" | "iota">;

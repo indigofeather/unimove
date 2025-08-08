@@ -29,6 +29,24 @@ export { useClientInfiniteQuery } from "./hooks/useClientInfiniteQuery";
 export { useClientMutation } from "./hooks/useClientMutation";
 export { useClientQueries } from "./hooks/useClientQueries";
 
+// Hook Types - 新的精確類型
+export type { UnimoveClientHookResult } from "./hooks/useClient";
+export type { UnimoveCurrentAccountResult } from "./hooks/useCurrentAccount";
+export type { UnimoveSignAndExecuteTransactionResult } from "./hooks/useSignAndExecuteTransaction";
+export type { UnimoveConnectWalletResult } from "./hooks/useConnectWallet";
+export type { UnimoveWalletsResult } from "./hooks/useWallets";
+export type { UnimoveSignTransactionResult } from "./hooks/useSignTransaction";
+export type { UnimoveSignPersonalMessageResult } from "./hooks/useSignPersonalMessage";
+export type { UnimoveClientQueryResult } from "./hooks/useClientQuery";
+export type { UnimoveAccountsResult } from "./hooks/useAccounts";
+export type { UnimoveAutoConnectWalletResult } from "./hooks/useAutoConnectWallet";
+export type { UnimoveCurrentWalletResult } from "./hooks/useCurrentWallet";
+export type { UnimoveDisconnectWalletResult } from "./hooks/useDisconnectWallet";
+export type { UnimoveSwitchAccountResult } from "./hooks/useSwitchAccount";
+export type { UnimoveClientInfiniteQueryResult } from "./hooks/useClientInfiniteQuery";
+export type { UnimoveClientMutationResult } from "./hooks/useClientMutation";
+export type { UnimoveClientQueriesResult } from "./hooks/useClientQueries";
+
 // Themes
 export * from "./themes";
 
@@ -39,6 +57,29 @@ export { unimoveSDK } from "./sdk";
 export { useUnimoveSDK } from "./hooks/useUnimoveSDK";
 
 // Types
-export type { Networks, ChainType, NetworkName } from "./types";
+export type {
+  Networks,
+  ChainType,
+  NetworkName,
+  UnimoveClientConfig,
+  UnimoveGetCoinsParams,
+  UnimoveGetObjectParams,
+  UnimoveNetwork,
+  UnimoveKeypairConfig,
+  UnimoveTransactionConfig,
+  UnimoveStructTag,
+  UnimoveBcsOptions,
+} from "./types";
 
-
+// SDK Types
+export type {
+  UnimoveSDK,
+  UnimoveClient,
+  UnimoveTransaction,
+  UnimoveBcs,
+  UnimoveCryptography,
+  UnimoveUtils,
+  UnimoveEd25519Keypair,
+  UnimoveSecp256k1Keypair,
+  UnimoveSecp256r1Keypair,
+} from "./sdk";

@@ -90,45 +90,61 @@ type IotaModules = {
 // 統一的 SDK 類型，根據 chain 參數提供正確的類型
 export type UnimoveSDK<T extends "sui" | "iota"> = T extends "sui"
   ? SuiModules & {
-      // 統一的 Client 方法
-      createClient: (config: { url: string }) => SuiClient.SuiClient;
-      getFullnodeUrl: (network: string) => string;
+    // 統一的 Client 方法
+    createClient: (config: { url: string }) => SuiClient.SuiClient;
+    getFullnodeUrl: (network: string) => string;
 
-      // 統一的 Transaction 方法
-      createTransaction: () => SuiTransactions.Transaction;
+    // 統一的 Transaction 方法
+    createTransaction: () => SuiTransactions.Transaction;
 
-      // 統一的 Keypair 創建方法
-      createEd25519Keypair: () => SuiEd25519Keypair.Ed25519Keypair;
-      createSecp256k1Keypair: () => SuiSecp256k1Keypair.Secp256k1Keypair;
-      createSecp256r1Keypair: () => SuiSecp256r1Keypair.Secp256r1Keypair;
+    // 統一的 Keypair 創建方法
+    createEd25519Keypair: () => SuiEd25519Keypair.Ed25519Keypair;
+    createSecp256k1Keypair: () => SuiSecp256k1Keypair.Secp256k1Keypair;
+    createSecp256r1Keypair: () => SuiSecp256r1Keypair.Secp256r1Keypair;
 
-      // 統一的工具方法
-      normalizeStructTag: typeof SuiUtils.normalizeStructTag;
-      parseStructTag: typeof SuiUtils.parseStructTag;
+    // 統一的 Keypair 靜態方法
+    Ed25519Keypair: typeof SuiEd25519Keypair.Ed25519Keypair;
+    Secp256k1Keypair: typeof SuiSecp256k1Keypair.Secp256k1Keypair;
+    Secp256r1Keypair: typeof SuiSecp256r1Keypair.Secp256r1Keypair;
 
-      // 統一的 BCS 方法
-      bcsSerialize: typeof SuiBcs.bcs;
-    }
+    // 統一的私鑰解碼方法
+    decodePrivateKey: (secretKey: string) => SuiCryptography.ParsedKeypair;
+
+    // 統一的工具方法
+    normalizeStructTag: typeof SuiUtils.normalizeStructTag;
+    parseStructTag: typeof SuiUtils.parseStructTag;
+
+    // 統一的 BCS 方法
+    bcsSerialize: typeof SuiBcs.bcs;
+  }
   : IotaModules & {
-      // 統一的 Client 方法
-      createClient: (config: { url: string }) => IotaClient.IotaClient;
-      getFullnodeUrl: (network: string) => string;
+    // 統一的 Client 方法
+    createClient: (config: { url: string }) => IotaClient.IotaClient;
+    getFullnodeUrl: (network: string) => string;
 
-      // 統一的 Transaction 方法
-      createTransaction: () => IotaTransactions.Transaction;
+    // 統一的 Transaction 方法
+    createTransaction: () => IotaTransactions.Transaction;
 
-      // 統一的 Keypair 創建方法
-      createEd25519Keypair: () => IotaEd25519Keypair.Ed25519Keypair;
-      createSecp256k1Keypair: () => IotaSecp256k1Keypair.Secp256k1Keypair;
-      createSecp256r1Keypair: () => IotaSecp256r1Keypair.Secp256r1Keypair;
+    // 統一的 Keypair 創建方法
+    createEd25519Keypair: () => IotaEd25519Keypair.Ed25519Keypair;
+    createSecp256k1Keypair: () => IotaSecp256k1Keypair.Secp256k1Keypair;
+    createSecp256r1Keypair: () => IotaSecp256r1Keypair.Secp256r1Keypair;
 
-      // 統一的工具方法
-      normalizeStructTag: typeof IotaUtils.normalizeStructTag;
-      parseStructTag: typeof IotaUtils.parseStructTag;
+    // 統一的 Keypair 靜態方法
+    Ed25519Keypair: typeof IotaEd25519Keypair.Ed25519Keypair;
+    Secp256k1Keypair: typeof IotaSecp256k1Keypair.Secp256k1Keypair;
+    Secp256r1Keypair: typeof IotaSecp256r1Keypair.Secp256r1Keypair;
 
-      // 統一的 BCS 方法
-      bcsSerialize: typeof IotaBcs.bcs;
-    };
+    // 統一的私鑰解碼方法
+    decodePrivateKey: (secretKey: string) => IotaCryptography.ParsedKeypair;
+
+    // 統一的工具方法
+    normalizeStructTag: typeof IotaUtils.normalizeStructTag;
+    parseStructTag: typeof IotaUtils.parseStructTag;
+
+    // 統一的 BCS 方法
+    bcsSerialize: typeof IotaBcs.bcs;
+  };
 
 // SDK 快取，避免重複載入
 const sdkCache = new Map<
@@ -216,6 +232,20 @@ async function loadSDK(
           createSecp256k1Keypair: () => new secp256k1Keypair.Secp256k1Keypair(),
           createSecp256r1Keypair: () => new secp256r1Keypair.Secp256r1Keypair(),
 
+          // 統一的 Keypair 靜態方法
+          Ed25519Keypair: ed25519Keypair.Ed25519Keypair,
+          Secp256k1Keypair: secp256k1Keypair.Secp256k1Keypair,
+          Secp256r1Keypair: secp256r1Keypair.Secp256r1Keypair,
+
+          // 統一的私鑰解碼方法
+          decodePrivateKey: (secretKey: string) => {
+            try {
+              return cryptography.decodeSuiPrivateKey(secretKey)
+            } catch (error) {
+              throw new Error(`Failed to decode Sui private key: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            }
+          },
+
           // 統一的工具方法
           normalizeStructTag: utils.normalizeStructTag,
           parseStructTag: utils.parseStructTag,
@@ -283,6 +313,20 @@ async function loadSDK(
           createSecp256k1Keypair: () => new secp256k1Keypair.Secp256k1Keypair(),
           createSecp256r1Keypair: () => new secp256r1Keypair.Secp256r1Keypair(),
 
+          // 統一的 Keypair 靜態方法
+          Ed25519Keypair: ed25519Keypair.Ed25519Keypair,
+          Secp256k1Keypair: secp256k1Keypair.Secp256k1Keypair,
+          Secp256r1Keypair: secp256r1Keypair.Secp256r1Keypair,
+
+          // 統一的私鑰解碼方法
+          decodePrivateKey: (secretKey: string) => {
+            try {
+              return cryptography.decodeIotaPrivateKey(secretKey)
+            } catch (error) {
+              throw new Error(`Failed to decode IOTA private key: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            }
+          },
+
           // 統一的工具方法
           normalizeStructTag: utils.normalizeStructTag,
           parseStructTag: utils.parseStructTag,
@@ -303,9 +347,9 @@ async function loadSDK(
     ) {
       throw new Error(
         `Failed to load ${chain} SDK. Please ensure you have installed the required peer dependencies:\n` +
-          `For Sui: bun add @mysten/dapp-kit @mysten/sui\n` +
-          `For IOTA: bun add @iota/dapp-kit @iota/iota-sdk\n` +
-          `Original error: ${error.message}`
+        `For Sui: bun add @mysten/dapp-kit @mysten/sui\n` +
+        `For IOTA: bun add @iota/dapp-kit @iota/iota-sdk\n` +
+        `Original error: ${error.message}`
       );
     }
     throw error;

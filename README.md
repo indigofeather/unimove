@@ -1,6 +1,14 @@
 # Unimove dApp Kit
 
-A unified React dApp kit for Sui and IOTA blockchain development. Build cross-chain dApps with consistent APIs, built-in wallet connection components, and seamless chain switching.
+Unimove dApp Kit is a TypeScript React toolkit for building cross-chain applications on [Sui](https://sui.io) and [IOTA](https://www.iota.org). It exposes a unified set of providers, hooks, and UI components so apps can switch networks at runtime while retaining strong typings.
+
+## Features
+
+- 🔗 One API for Sui and IOTA
+- ♻️ Runtime chain switching
+- ✅ Fully typed hooks (`useClientQuery`, `useClientMutation`, `useClientInfiniteQuery`, `useClientQueries`)
+- 🎛️ Built-in wallet UI such as `ConnectButton`
+- ⚙️ Tree-shakeable ESM and CJS builds
 
 ## Installation
 
@@ -10,95 +18,92 @@ npm install unimove-dapp-kit
 bun add unimove-dapp-kit
 ```
 
-### Peer Dependencies
+### Peer dependencies
 
-Install the required dependencies for the chains you want to support:
+Install the peer dependencies for the chains you plan to support:
 
 ```bash
-# For Sui support
+# Sui
 npm install @mysten/dapp-kit @mysten/sui @tanstack/react-query
 
-# For IOTA support
+# IOTA
 npm install @iota/dapp-kit @iota/iota-sdk @tanstack/react-query
 
-# For Next.js projects
+# Optional: Next.js projects
 npm install next react react-dom
 ```
 
-## Quick Start
+## Quick start
 
-### 1. Setup Providers
+### Wrap your app
 
-Wrap your app with the chain-specific providers:
+```tsx
+import { ClientProvider, WalletProvider } from "unimove-dapp-kit";
+import { getFullnodeUrl as suiUrl } from "@mysten/sui/client";
 
-```typescript
-import { ClientProvider, WalletProvider } from 'unimove-dapp-kit';
-import { getFullnodeUrl as SuiGetFullnodeUrl } from '@mysten/sui/client';
-import { getFullnodeUrl as IotaGetFullnodeUrl } from '@iota/iota-sdk/client';
-
-// For Sui
-function App() {
+export function App() {
   return (
     <ClientProvider
       chain="sui"
-      networks={{
-        testnet: { url: SuiGetFullnodeUrl('testnet') },
-        mainnet: { url: SuiGetFullnodeUrl('mainnet') },
-      }}
+      networks={{ testnet: { url: suiUrl("testnet") } }}
       defaultNetwork="testnet"
     >
       <WalletProvider>
-        <YourApp />
-      </WalletProvider>
-    </ClientProvider>
-  );
-}
-
-// For IOTA
-function App() {
-  return (
-    <ClientProvider
-      chain="iota"
-      networks={{
-        testnet: { url: IotaGetFullnodeUrl('testnet') },
-        mainnet: { url: IotaGetFullnodeUrl('mainnet') },
-      }}
-      defaultNetwork="testnet"
-    >
-      <WalletProvider>
-        <YourApp />
+        <YourRoutes />
       </WalletProvider>
     </ClientProvider>
   );
 }
 ```
 
-### 2. Use Built-in Components
+### Connect a wallet
 
-```typescript
-import { ConnectButton } from 'unimove-dapp-kit';
+```tsx
+import { ConnectButton } from "unimove-dapp-kit";
 
-function WalletSection() {
+export function WalletSection() {
   return <ConnectButton />;
 }
 ```
 
-### 3. Access Wallet and Account Data
+### Query chain data
 
-```typescript
-import { useCurrentAccount, useCurrentWallet } from 'unimove-dapp-kit';
+```tsx
+import { useClientQuery } from "unimove-dapp-kit";
 
-function AccountInfo() {
-  const { data: account } = useCurrentAccount();
-  const { data: wallet } = useCurrentWallet();
+const { data } = useClientQuery("getBalance", { owner: address });
+console.log(data?.totalBalance);
+```
 
-  if (!account) return <div>Please connect your wallet</div>;
+All client hooks infer argument and result types from the active chain.
 
+## Chain switching
+
+Applications can offer multiple networks by swapping the provider:
+
+```tsx
+import { useState } from "react";
+import { ClientProvider, WalletProvider } from "unimove-dapp-kit";
+import { getFullnodeUrl as suiUrl } from "@mysten/sui/client";
+import { getFullnodeUrl as iotaUrl } from "@iota/iota-sdk/client";
+
+const networks = {
+  sui: { testnet: { url: suiUrl("testnet") } },
+  iota: { testnet: { url: iotaUrl("testnet") } },
+};
+
+function MultiChainApp() {
+  const [chain, setChain] = useState<"sui" | "iota">("sui");
   return (
-    <div>
-      <p>Wallet: {wallet?.name}</p>
-      <p>Address: {account.address}</p>
-    </div>
+    <ClientProvider
+      chain={chain}
+      networks={networks[chain]}
+      defaultNetwork="testnet"
+    >
+      <WalletProvider>
+        <YourRoutes />
+      </WalletProvider>
+    </ClientProvider>
   );
 }
 ```
@@ -109,282 +114,223 @@ function AccountInfo() {
 
 #### ClientProvider
 
-Provides blockchain client context to your app. Must be the outermost provider.
+Configure blockchain client and network settings:
 
-```typescript
+```tsx
+import { ClientProvider } from "unimove-dapp-kit";
+
 <ClientProvider
-  chain="sui" | "iota"
-  networks={Networks}
-  defaultNetwork={string}
-  onNetworkChange?={(network: string) => void}
+  chain="sui" // or "iota"
+  networks={{ testnet: { url: "https://..." } }}
+  defaultNetwork="testnet"
+  onNetworkChange={(network) => console.log(network)}
 >
+  {children}
+</ClientProvider>;
 ```
 
 #### WalletProvider
 
-Manages wallet connections and state. Must be wrapped inside ClientProvider.
+Provides wallet connection functionality:
 
-```typescript
-<WalletProvider>
-  {children}
-</WalletProvider>
-```
+```tsx
+import { WalletProvider } from "unimove-dapp-kit";
 
-### Hooks
-
-#### Wallet Hooks
-
-```typescript
-// Get current connected account
-const { data: account } = useCurrentAccount();
-
-// Get current connected wallet
-const { data: wallet } = useCurrentWallet();
-
-// Get all available accounts
-const { data: accounts } = useAccounts();
-
-// Get all available wallets
-const { data: wallets } = useWallets();
-
-// Connect to a wallet
-const { mutate: connect } = useConnectWallet();
-
-// Disconnect from wallet
-const { mutate: disconnect } = useDisconnectWallet();
-
-// Auto-connect to previously used wallet
-const { mutate: autoConnect } = useAutoConnectWallet();
-
-// Switch between accounts
-const { mutate: switchAccount } = useSwitchAccount();
-
-// Sign transactions
-const { mutateAsync: signTransaction } = useSignTransaction();
-
-// Sign personal messages
-const { mutateAsync: signMessage } = useSignPersonalMessage();
-
-// Sign and execute transactions
-const { mutate: signAndExecute } = useSignAndExecuteTransaction();
-```
-
-#### Client Hooks
-
-```typescript
-// Get blockchain client instance
-const client = useClient();
-
-// Query blockchain data with caching
-const { data, isLoading, error } = useClientQuery({
-  method: "getBalance",
-  params: [address],
-});
-
-// Infinite queries for paginated data
-const { data, fetchNextPage } = useClientInfiniteQuery({
-  method: "getCoins",
-  params: [address],
-});
-
-// Mutate blockchain state
-const { mutate } = useClientMutation();
-
-// Multiple parallel queries
-const results = useClientQueries([
-  { method: "getBalance", params: [address1] },
-  { method: "getBalance", params: [address2] },
-]);
+<WalletProvider>{children}</WalletProvider>;
 ```
 
 ### Components
 
 #### ConnectButton
 
-Pre-built wallet connection button with built-in styling:
+Unified wallet connection button:
 
-```typescript
-<ConnectButton />
+```tsx
+import { ConnectButton } from "unimove-dapp-kit";
+
+<ConnectButton />;
 ```
 
 #### ConnectModal
 
-Customizable wallet connection modal:
+Wallet connection modal:
 
-```typescript
-const [open, setOpen] = useState(false);
+```tsx
+import { ConnectModal } from "unimove-dapp-kit";
 
-<ConnectModal
-  open={open}
-  onOpenChange={setOpen}
-/>
+<ConnectModal open={isOpen} onOpenChange={setIsOpen} />;
 ```
 
 #### ClientQuery
 
-Declarative data fetching component:
+Declarative query component:
 
-```typescript
-<ClientQuery
-  method="getBalance"
-  params={[address]}
-  render={({ data, isLoading, error }) => (
-    isLoading ? <div>Loading...</div> :
-    error ? <div>Error: {error.message}</div> :
-    <div>Balance: {data?.totalBalance}</div>
+```tsx
+import { ClientQuery } from "unimove-dapp-kit";
+
+<ClientQuery method="getBalance" params={{ owner: address }}>
+  {({ data, isPending, error }) => (
+    <div>{isPending ? "Loading..." : data?.totalBalance}</div>
   )}
-/>
+</ClientQuery>;
 ```
 
-## Complete Example
+### Hooks
 
-```typescript
+#### Wallet Hooks
+
+- `useAccounts()` - Get all accounts
+- `useAutoConnectWallet()` - Auto-connect wallet
+- `useConnectWallet()` - Connect wallet
+- `useCurrentAccount()` - Get current account
+- `useCurrentWallet()` - Get current wallet
+- `useDisconnectWallet()` - Disconnect wallet
+- `useSignAndExecuteTransaction()` - Sign and execute transaction
+- `useSignPersonalMessage()` - Sign personal message
+- `useSignTransaction()` - Sign transaction
+- `useSwitchAccount()` - Switch account
+- `useWallets()` - Get all available wallets
+
+#### Client Query Hooks
+
+- `useClient()` - Get blockchain client
+- `useClientQuery()` - Single query
+- `useClientInfiniteQuery()` - Infinite query (pagination)
+- `useClientMutation()` - Mutation operations
+- `useClientQueries()` - Multiple queries
+
+#### Context Hook
+
+- `useChain()` - Get current chain type
+
+### Types
+
+#### Basic Types
+
+```ts
+import type { ChainType, NetworkName, Networks } from "unimove-dapp-kit";
+
+type ChainType = "sui" | "iota";
+type NetworkName = "mainnet" | "testnet" | "devnet" | "localnet";
+type Networks = Record<string, { url: string }>;
+```
+
+#### Unimove Unified Types
+
+```ts
+import type {
+  UnimoveClientConfig,
+  UnimoveGetCoinsParams,
+  UnimoveGetObjectParams,
+  UnimoveNetwork,
+  UnimoveKeypairConfig,
+  UnimoveTransactionConfig,
+  UnimoveStructTag,
+  UnimoveBcsOptions,
+} from "unimove-dapp-kit";
+```
+
+#### Hook Result Types
+
+```ts
+import type {
+  UnimoveClientHookResult,
+  UnimoveCurrentAccountResult,
+  UnimoveSignAndExecuteTransactionResult,
+  UnimoveConnectWalletResult,
+  UnimoveWalletsResult,
+  UnimoveClientQueryResult,
+  // ... more types
+} from "unimove-dapp-kit";
+```
+
+#### Theme Types
+
+```ts
+import type {
+  SuiTheme,
+  IotaTheme,
+  UniversalTheme,
+  UniversalThemeVars,
+} from "unimove-dapp-kit";
+```
+
+### Usage Examples
+
+#### Basic Wallet Operations
+
+```tsx
 import {
-  ClientProvider,
-  WalletProvider,
-  ConnectButton,
   useCurrentAccount,
-  useSignAndExecuteTransaction,
-  useClient
-} from 'unimove-dapp-kit';
-import { getFullnodeUrl as SuiGetFullnodeUrl } from '@mysten/sui/client';
+  useConnectWallet,
+  useDisconnectWallet,
+} from "unimove-dapp-kit";
 
-function TransactionExample() {
-  const { data: account } = useCurrentAccount();
-  const { mutate: signAndExecute } = useSignAndExecuteTransaction();
-  const client = useClient();
-
-  const handleTransaction = async () => {
-    if (!account) return;
-
-    // Create your transaction here
-    const transaction = /* your transaction */;
-
-    signAndExecute({
-      transaction,
-      options: { showEffects: true }
-    });
-  };
+function WalletInfo() {
+  const account = useCurrentAccount();
+  const { mutate: connect } = useConnectWallet();
+  const { mutate: disconnect } = useDisconnectWallet();
 
   return (
     <div>
-      <ConnectButton />
-      {account && (
+      {account ? (
         <div>
-          <p>Connected: {account.address}</p>
-          <button onClick={handleTransaction}>
-            Send Transaction
-          </button>
+          <p>Address: {account.address}</p>
+          <button onClick={() => disconnect()}>Disconnect</button>
         </div>
+      ) : (
+        <button onClick={() => connect({ walletName: "Sui Wallet" })}>
+          Connect Wallet
+        </button>
       )}
     </div>
   );
 }
+```
 
-function App() {
-  return (
-    <ClientProvider
-      chain="sui"
-      networks={{
-        testnet: { url: SuiGetFullnodeUrl('testnet') },
-        mainnet: { url: SuiGetFullnodeUrl('mainnet') },
-      }}
-      defaultNetwork="testnet"
-    >
-      <WalletProvider>
-        <TransactionExample />
-      </WalletProvider>
-    </ClientProvider>
-  );
+#### Query Blockchain Data
+
+```tsx
+import { useClientQuery } from "unimove-dapp-kit";
+
+function Balance({ address }: { address: string }) {
+  const { data, isPending, error } = useClientQuery("getBalance", {
+    owner: address,
+  });
+
+  if (isPending) return <div>Loading...</div>;
+  if (error) return <div>Error: {error.message}</div>;
+
+  return <div>Balance: {data?.totalBalance}</div>;
 }
 ```
 
-## Chain Switching
+#### Execute Transaction
 
-You can build apps that support multiple chains by conditionally rendering different ClientProviders:
+```tsx
+import { useSignAndExecuteTransaction } from "unimove-dapp-kit";
 
-```typescript
-import { useState } from 'react';
-import { ClientProvider, WalletProvider } from 'unimove-dapp-kit';
-import { getFullnodeUrl as SuiGetFullnodeUrl } from '@mysten/sui/client';
-import { getFullnodeUrl as IotaGetFullnodeUrl } from '@iota/iota-sdk/client';
+function SendTransaction() {
+  const { mutate: signAndExecute } = useSignAndExecuteTransaction();
 
-const allNetworks: { sui: Networks; iota: Networks } = {
-  sui: {
-    testnet: { url: SuiGetFullnodeUrl('testnet') },
-    mainnet: { url: SuiGetFullnodeUrl('mainnet') },
-  },
-  iota: {
-    testnet: { url: IotaGetFullnodeUrl('testnet') },
-    mainnet: { url: IotaGetFullnodeUrl('mainnet') },
-  },
-};
+  const handleSend = () => {
+    signAndExecute({
+      transaction: txb, // 你的交易區塊
+      options: {
+        showEffects: true,
+        showObjectChanges: true,
+      },
+    });
+  };
 
-function MultiChainApp() {
-  const [chain, setChain] = useState<'sui' | 'iota'>('sui');
-  const networks = useMemo(() => allNetworks[chain], [chain]);
-
-  return (
-    <div>
-      <select value={chain} onChange={(e) => setChain(e.target.value as any)}>
-        <option value="sui">Sui</option>
-        <option value="iota">IOTA</option>
-      </select>
-
-      <ClientProvider
-        chain={chain}
-        networks={networks[chain]}
-        defaultNetwork="testnet"
-      >
-        <WalletProvider>
-          <YourApp />
-        </WalletProvider>
-      </ClientProvider>
-    </div>
-  );
+  return <button onClick={handleSend}>發送交易</button>;
 }
 ```
 
-## TypeScript Support
+## Scripts
 
-The kit provides full TypeScript support with chain-specific types:
-
-```typescript
-import type {
-  UnimoveCurrentAccountResult,
-  UnimoveClientQueryResult,
-  ChainType,
-  Networks,
-} from "unimove-dapp-kit";
-
-// Chain-specific account type
-const account: UnimoveCurrentAccountResult<"sui"> = useCurrentAccount();
-
-// Generic types
-const networks: Networks = {
-  testnet: { url: "https://..." },
-};
-```
-
-## Supported Chains
-
-- **Sui** - Full support via `@mysten/dapp-kit`
-- **IOTA** - Full support via `@iota/dapp-kit`
-
-## Features
-
-- 🔄 **Unified API** - Same hooks and components for all chains
-- 🎯 **Type Safe** - Full TypeScript support with chain-specific types
-- 🎨 **Built-in UI** - Pre-styled wallet connection components
-- ⚡ **Dynamic Loading** - Chain-specific code loaded on demand
-- 🔌 **React Integration** - Built for React and Next.js
-- 🔄 **Chain Switching** - Easy runtime chain switching
-
-## Requirements
-
-- React 18.2.0+
-- Next.js 14.0.0+ (for SSR support)
-- @tanstack/react-query 5.0.0+
+- `bun run build` – compile the package
+- `bun run check` – run linting and type checks
 
 ## License
 

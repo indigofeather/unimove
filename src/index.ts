@@ -50,12 +50,6 @@ export type { UnimoveClientQueriesResult } from "./hooks/useClientQueries";
 // Themes
 export * from "./themes";
 
-// SDK
-export { unimoveSDK } from "./sdk";
-
-// SDK Hook
-export { useUnimoveSDK } from "./hooks/useUnimoveSDK";
-
 // Types
 export type {
   Networks,
@@ -70,16 +64,3 @@ export type {
   UnimoveStructTag,
   UnimoveBcsOptions,
 } from "./types";
-
-// SDK Types
-export type {
-  UnimoveSDK,
-  UnimoveClient,
-  UnimoveTransaction,
-  UnimoveBcs,
-  UnimoveCryptography,
-  UnimoveUtils,
-  UnimoveEd25519Keypair,
-  UnimoveSecp256k1Keypair,
-  UnimoveSecp256r1Keypair,
-} from "./sdk";

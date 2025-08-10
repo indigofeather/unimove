@@ -1,63 +1,83 @@
 "use client";
 
-import { useSuiClientMutation } from "@mysten/dapp-kit";
-import { useIotaClientMutation } from "@iota/dapp-kit";
+import {
+  type SuiRpcMethods,
+  useSuiClientMutation,
+  type UseSuiClientMutationOptions,
+} from "@mysten/dapp-kit";
+import {
+  type IotaRpcMethods,
+  useIotaClientMutation,
+  type UseIotaClientMutationOptions,
+} from "@iota/dapp-kit";
 import { useMemo } from "react";
+import type { UseMutationResult } from "@tanstack/react-query";
 
 import { useChain } from "../context";
 
-// 精確的類型定義
-export type UnimoveClientMutationResult<T extends "sui" | "iota"> =
-  T extends "sui"
-    ? ReturnType<typeof useSuiClientMutation>
-    : ReturnType<typeof useIotaClientMutation>;
+type Chain = "sui" | "iota";
+type RpcMethods<T extends Chain> = T extends "sui"
+  ? SuiRpcMethods
+  : IotaRpcMethods;
+type MutationOptions<
+  T extends Chain,
+  M extends keyof RpcMethods<T>,
+> = T extends "sui"
+  ? UseSuiClientMutationOptions<M & keyof SuiRpcMethods>
+  : UseIotaClientMutationOptions<M & keyof IotaRpcMethods>;
+type MethodInfo<
+  TC extends Chain,
+  TM extends keyof RpcMethods<TC>,
+> = RpcMethods<TC>[TM & keyof RpcMethods<TC>];
+type MethodParams<TC extends Chain, TM extends keyof RpcMethods<TC>> =
+  MethodInfo<TC, TM> extends {
+    params: infer P;
+  }
+    ? P
+    : never;
+type MethodResult<TC extends Chain, TM extends keyof RpcMethods<TC>> =
+  MethodInfo<TC, TM> extends {
+    result: infer R;
+  }
+    ? R
+    : never;
 
-// 重載函數定義
-export function useClientMutation<TMethod extends string>(
-  method: TMethod,
-  options?: unknown
-): UnimoveClientMutationResult<"sui" | "iota">;
+export type UnimoveClientMutationResult<
+  T extends Chain,
+  M extends keyof RpcMethods<T>,
+> = UseMutationResult<MethodResult<T, M>, Error, MethodParams<T, M>, unknown[]>;
 
 export function useClientMutation<
-  TMethod extends string,
-  T extends "sui" | "iota",
+  TChain extends Chain,
+  TMethod extends keyof RpcMethods<TChain>,
 >(
   method: TMethod,
-  options?: unknown,
-  chain?: T
-): UnimoveClientMutationResult<T>;
+  options?: MutationOptions<TChain, TMethod>,
+  chain?: TChain
+): UnimoveClientMutationResult<TChain, TMethod>;
 
-export function useClientMutation<
-  TMethod extends string,
-  T extends "sui" | "iota",
->(
-  method: TMethod,
+export function useClientMutation(
+  method: string,
   options?: unknown,
-  chain?: T
-): UnimoveClientMutationResult<T> {
+  chain?: Chain
+): UnimoveClientMutationResult<Chain, any> {
   const contextChain = useChain();
   const finalChain = chain || contextChain;
 
-  // 始終調用兩個 hooks，但使用 enabled 來控制哪個實際執行
-  const suiResult = useSuiClientMutation(
-    method as Parameters<typeof useSuiClientMutation>[0],
-    options as Parameters<typeof useSuiClientMutation>[1]
-  );
+  const suiResult = useSuiClientMutation(method as any, options as any);
 
-  const iotaResult = useIotaClientMutation(
-    method as Parameters<typeof useIotaClientMutation>[0],
-    options as Parameters<typeof useIotaClientMutation>[1]
-  );
+  const iotaResult = useIotaClientMutation(method as any, options as any);
 
-  // 使用 useMemo 來返回對應鏈的結果
-  return useMemo(() => {
-    return (
-      finalChain === "sui" ? suiResult : iotaResult
-    ) as UnimoveClientMutationResult<T>;
-  }, [finalChain, suiResult, iotaResult]);
+  return useMemo(
+    () =>
+      (finalChain === "sui"
+        ? suiResult
+        : iotaResult) as UnimoveClientMutationResult<Chain, any>,
+    [finalChain, suiResult, iotaResult]
+  );
 }
 
-// 向後兼容的類型別名
-export type UseClientMutationResult = UnimoveClientMutationResult<
-  "sui" | "iota"
->;
+export type UseClientMutationResult<
+  T extends Chain,
+  M extends keyof RpcMethods<T>,
+> = UnimoveClientMutationResult<T, M>;

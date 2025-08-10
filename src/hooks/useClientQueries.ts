@@ -1,54 +1,110 @@
 "use client";
 
-import { useSuiClientQueries } from "@mysten/dapp-kit";
-import { useIotaClientQueries } from "@iota/dapp-kit";
+import {
+  type SuiRpcMethods,
+  useSuiClientQueries,
+  type UseSuiClientQueryOptions,
+} from "@mysten/dapp-kit";
+import {
+  type IotaRpcMethods,
+  useIotaClientQueries,
+  type UseIotaClientQueryOptions,
+} from "@iota/dapp-kit";
 import { useMemo } from "react";
+import type { UseQueryResult } from "@tanstack/react-query";
 
 import { useChain } from "../context";
 
-// 精確的類型定義
-export type UnimoveClientQueriesResult<T extends "sui" | "iota"> =
-  T extends "sui"
-    ? ReturnType<typeof useSuiClientQueries>
-    : ReturnType<typeof useIotaClientQueries>;
+type Chain = "sui" | "iota";
+type RpcMethods<T extends Chain> = T extends "sui"
+  ? SuiRpcMethods
+  : IotaRpcMethods;
+type ClientQueryOptions<
+  T extends Chain,
+  M extends keyof RpcMethods<T>,
+  TData,
+> = T extends "sui"
+  ? UseSuiClientQueryOptions<M & keyof SuiRpcMethods, TData>
+  : UseIotaClientQueryOptions<M & keyof IotaRpcMethods, TData>;
+type MethodInfo<
+  TC extends Chain,
+  TM extends keyof RpcMethods<TC>,
+> = RpcMethods<TC>[TM & keyof RpcMethods<TC>];
+type MethodResult<TC extends Chain, TM extends keyof RpcMethods<TC>> =
+  MethodInfo<TC, TM> extends {
+    result: infer R;
+  }
+    ? R
+    : never;
 
-// 重載函數定義
-export function useClientQueries(queriesConfig: {
-  queries: unknown[];
-}): UnimoveClientQueriesResult<"sui" | "iota">;
+type ClientQueryConfig<T extends Chain> =
+  RpcMethods<T>[keyof RpcMethods<T>] extends infer Method
+    ? Method extends {
+        name: infer M extends keyof RpcMethods<T>;
+        params?: infer P;
+      }
+      ? undefined extends P
+        ? {
+            method: M;
+            params?: P;
+            options?: ClientQueryOptions<T, M, unknown>;
+          }
+        : {
+            method: M;
+            params: P;
+            options?: ClientQueryOptions<T, M, unknown>;
+          }
+      : never
+    : never;
 
-export function useClientQueries<T extends "sui" | "iota">(
-  queriesConfig: { queries: unknown[] },
-  chain?: T
-): UnimoveClientQueriesResult<T>;
+export type UnimoveClientQueriesResult<
+  T extends Chain,
+  Q extends readonly ClientQueryConfig<T>[],
+> = {
+  -readonly [K in keyof Q]: Q[K] extends {
+    method: infer M extends keyof RpcMethods<T>;
+    readonly options?: { select?: (...args: any[]) => infer R } | object;
+  }
+    ? UseQueryResult<unknown extends R ? MethodResult<T, M> : R, Error>
+    : never;
+};
 
-export function useClientQueries<T extends "sui" | "iota">(
-  queriesConfig: { queries: unknown[] },
-  chain?: T
-): UnimoveClientQueriesResult<T> {
+export function useClientQueries<
+  TChain extends Chain,
+  const Queries extends readonly ClientQueryConfig<TChain>[],
+  Results = UnimoveClientQueriesResult<TChain, Queries>,
+>(
+  {
+    queries,
+    combine,
+  }: {
+    queries: Queries;
+    combine?: (results: UnimoveClientQueriesResult<TChain, Queries>) => Results;
+  },
+  chain?: TChain
+): Results {
   const contextChain = useChain();
   const finalChain = chain || contextChain;
 
-  // 始終調用兩個 hooks，但只有對應鏈的會實際執行查詢
   const suiResult = useSuiClientQueries(
     finalChain === "sui"
-      ? (queriesConfig as Parameters<typeof useSuiClientQueries>[0])
+      ? ({ queries, combine } as Parameters<typeof useSuiClientQueries>[0])
       : ({ queries: [] } as Parameters<typeof useSuiClientQueries>[0])
   );
 
   const iotaResult = useIotaClientQueries(
     finalChain === "iota"
-      ? (queriesConfig as Parameters<typeof useIotaClientQueries>[0])
+      ? ({ queries, combine } as Parameters<typeof useIotaClientQueries>[0])
       : ({ queries: [] } as Parameters<typeof useIotaClientQueries>[0])
   );
 
-  // 使用 useMemo 來返回對應鏈的結果
-  return useMemo(() => {
-    return (
-      finalChain === "sui" ? suiResult : iotaResult
-    ) as UnimoveClientQueriesResult<T>;
-  }, [finalChain, suiResult, iotaResult]);
+  return useMemo(
+    () => (finalChain === "sui" ? suiResult : iotaResult) as Results,
+    [finalChain, suiResult, iotaResult]
+  );
 }
 
-// 向後兼容的類型別名
-export type UseClientQueriesResult = UnimoveClientQueriesResult<"sui" | "iota">;
+export type UseClientQueriesResult<
+  T extends Chain,
+  Q extends readonly ClientQueryConfig<T>[],
+> = UnimoveClientQueriesResult<T, Q>;

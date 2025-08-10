@@ -1,6 +1,6 @@
 {
   "name": "unimove-dapp-kit",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "A comprehensive dApp kit for building cross-chain dApps on Sui and IOTA with runtime chain switching, built-in UI components, and unified APIs.",
   "author": {
     "name": "Lance He",

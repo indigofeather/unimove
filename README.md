@@ -1,5 +1,7 @@
 # Unimove dApp Kit
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/indigofeather/unimove-dapp-kit)
+
 Unimove dApp Kit is a TypeScript React toolkit for building cross-chain applications on [Sui](https://sui.io) and [IOTA](https://www.iota.org). It exposes a unified set of providers, hooks, and UI components so apps can switch networks at runtime while retaining strong typings.
 
 ## Features
@@ -315,7 +317,7 @@ function SendTransaction() {
 
   const handleSend = () => {
     signAndExecute({
-      transaction: txb, // 你的交易區塊
+      transaction: txb, // your transaction block
       options: {
         showEffects: true,
         showObjectChanges: true,
@@ -323,7 +325,7 @@ function SendTransaction() {
     });
   };
 
-  return <button onClick={handleSend}>發送交易</button>;
+  return <button onClick={handleSend}>Send Transaction</button>;
 }
 ```
 

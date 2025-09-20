@@ -1,14 +1,11 @@
 "use client";
 
-import { useMemo } from "react";
 import {
   type SuiRpcPaginatedMethods,
-  useSuiClientInfiniteQuery,
   type UseSuiClientInfiniteQueryOptions,
 } from "@mysten/dapp-kit";
 import {
   type IotaRpcPaginatedMethods,
-  useIotaClientInfiniteQuery,
   type UseIotaClientInfiniteQueryOptions,
 } from "@iota/dapp-kit";
 import type {
@@ -16,9 +13,14 @@ import type {
   UseInfiniteQueryResult,
 } from "@tanstack/react-query";
 
-import { useChain } from "../context";
+import { createChainHookCaller } from "../chains";
+import type { ChainId } from "../chains";
 
-type Chain = "sui" | "iota";
+const useClientInfiniteQueryInternal = createChainHookCaller(
+  "useClientInfiniteQuery"
+);
+
+type Chain = ChainId;
 type PaginatedMethods<T extends Chain> = T extends "sui"
   ? SuiRpcPaginatedMethods
   : IotaRpcPaginatedMethods;
@@ -33,18 +35,14 @@ type MethodInfo<
   TC extends Chain,
   TM extends keyof PaginatedMethods<TC>,
 > = PaginatedMethods<TC>[TM & keyof PaginatedMethods<TC>];
-type MethodParams<TC extends Chain, TM extends keyof PaginatedMethods<TC>> =
-  MethodInfo<TC, TM> extends {
-    params: infer P;
-  }
-    ? P
-    : never;
-type MethodResult<TC extends Chain, TM extends keyof PaginatedMethods<TC>> =
-  MethodInfo<TC, TM> extends {
-    result: infer R;
-  }
-    ? R
-    : never;
+type MethodParams<
+  TC extends Chain,
+  TM extends keyof PaginatedMethods<TC>,
+> = MethodInfo<TC, TM> extends { params: infer P } ? P : never;
+type MethodResult<
+  TC extends Chain,
+  TM extends keyof PaginatedMethods<TC>,
+> = MethodInfo<TC, TM> extends { result: infer R } ? R : never;
 
 export type UnimoveClientInfiniteQueryResult<TData> = UseInfiniteQueryResult<
   TData,
@@ -68,26 +66,20 @@ export function useClientInfiniteQuery(
   options?: Record<string, unknown>,
   chain?: Chain
 ): UnimoveClientInfiniteQueryResult<unknown> {
-  const contextChain = useChain();
-  const finalChain = chain || contextChain;
+  if (chain) {
+    return useClientInfiniteQueryInternal(
+      method,
+      params,
+      options,
+      chain
+    ) as UnimoveClientInfiniteQueryResult<unknown>;
+  }
 
-  const suiResult = useSuiClientInfiniteQuery(method as any, params as any, {
-    ...(options as any),
-    enabled: (options as any)?.enabled && finalChain === "sui",
-  });
-
-  const iotaResult = useIotaClientInfiniteQuery(method as any, params as any, {
-    ...(options as any),
-    enabled: (options as any)?.enabled && finalChain === "iota",
-  });
-
-  return useMemo(
-    () =>
-      (finalChain === "sui"
-        ? suiResult
-        : iotaResult) as UnimoveClientInfiniteQueryResult<unknown>,
-    [finalChain, suiResult, iotaResult]
-  );
+  return useClientInfiniteQueryInternal(
+    method,
+    params,
+    options
+  ) as UnimoveClientInfiniteQueryResult<unknown>;
 }
 
 export type UseClientInfiniteQueryResult<TData> =

@@ -1,34 +1,23 @@
 "use client";
 
-import type { ComponentProps } from "react";
-import dynamic from "next/dynamic";
+import type { ComponentProps, ComponentType } from "react";
 
+import { chainRegistry } from "../chains";
 import { useChain } from "../context";
 
-const SuiConnectModal = dynamic(
-  () => import("@mysten/dapp-kit").then((m) => m.ConnectModal),
-  { ssr: false }
-);
-const IotaConnectModal = dynamic(
-  () => import("@iota/dapp-kit").then((m) => m.ConnectModal),
-  { ssr: false }
-);
+type SuiProps = ComponentProps<
+  typeof chainRegistry["sui"]["components"]["ConnectModal"]
+>;
+type IotaProps = ComponentProps<
+  typeof chainRegistry["iota"]["components"]["ConnectModal"]
+>;
 
-type SuiConnectModalProps = ComponentProps<typeof SuiConnectModal>;
-type IotaConnectModalProps = ComponentProps<typeof IotaConnectModal>;
-
-type ConnectModalProps = SuiConnectModalProps | IotaConnectModalProps;
+type ConnectModalProps = SuiProps & IotaProps;
 
 export function ConnectModal(props: ConnectModalProps) {
   const chain = useChain();
+  const ModalComponent = chainRegistry[chain].components
+    .ConnectModal as ComponentType<ConnectModalProps>;
 
-  if (chain === "sui") {
-    return <SuiConnectModal {...(props as SuiConnectModalProps)} />;
-  }
-
-  if (chain === "iota") {
-    return <IotaConnectModal {...(props as IotaConnectModalProps)} />;
-  }
-
-  return null;
+  return <ModalComponent {...props} />;
 }

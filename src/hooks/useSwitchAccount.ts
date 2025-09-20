@@ -1,33 +1,24 @@
 "use client";
 
-import { useSwitchAccount as useSuiSwitchAccount } from "@mysten/dapp-kit";
-import { useSwitchAccount as useIotaSwitchAccount } from "@iota/dapp-kit";
+import type { ChainId, ChainRegistry } from "../chains";
+import { createChainHookCaller } from "../chains";
 
-import { useChain } from "../context";
+const useSwitchAccountInternal = createChainHookCaller("useSwitchAccount");
 
-// 精確的類型定義
-export type UnimoveSwitchAccountResult<T extends "sui" | "iota"> =
-  T extends "sui"
-    ? ReturnType<typeof useSuiSwitchAccount>
-    : ReturnType<typeof useIotaSwitchAccount>;
+type HookName = "useSwitchAccount";
 
-// 重載函數定義
-export function useSwitchAccount(): UnimoveSwitchAccountResult<"sui" | "iota">;
-export function useSwitchAccount<T extends "sui" | "iota">(
-  chain?: T
-): UnimoveSwitchAccountResult<T>;
-export function useSwitchAccount<T extends "sui" | "iota">(
-  chain?: T
-): UnimoveSwitchAccountResult<T> {
-  const contextChain = useChain();
-  const finalChain = chain || contextChain;
+type HookResult<C extends ChainId> = ReturnType<
+  ChainRegistry[C]["hooks"][HookName]
+>;
 
-  if (finalChain === "sui") {
-    return useSuiSwitchAccount() as UnimoveSwitchAccountResult<T>;
-  }
+type AnyChainResult = ReturnType<
+  ChainRegistry[ChainId]["hooks"][HookName]
+>;
 
-  return useIotaSwitchAccount() as UnimoveSwitchAccountResult<T>;
+export function useSwitchAccount(): AnyChainResult;
+export function useSwitchAccount<C extends ChainId>(chain?: C): HookResult<C>;
+export function useSwitchAccount(chain?: ChainId) {
+  return useSwitchAccountInternal(chain) as AnyChainResult;
 }
 
-// 向後兼容的類型別名
-export type UseSwitchAccountResult = UnimoveSwitchAccountResult<"sui" | "iota">;
+export type UnimoveSwitchAccountResult<T extends ChainId> = HookResult<T>;

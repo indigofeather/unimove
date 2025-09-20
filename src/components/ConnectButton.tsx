@@ -1,29 +1,22 @@
 "use client";
 
-import dynamic from "next/dynamic";
+import type { ComponentPropsWithoutRef } from "react";
 
+import { chainRegistry } from "../chains";
 import { useChain } from "../context";
 
-const SuiConnectButton = dynamic(
-  () =>
-    import("../adapters/SuiConnectButton").then(
-      (m) => m.SuiConnectButtonAdapter
-    ),
-  { ssr: false }
-);
-const IotaConnectButton = dynamic(
-  () =>
-    import("../adapters/IotaConnectButton").then(
-      (m) => m.IotaConnectButtonAdapter
-    ),
-  { ssr: false }
-);
+type SuiProps = ComponentPropsWithoutRef<
+  typeof chainRegistry["sui"]["components"]["ConnectButton"]
+>;
+type IotaProps = ComponentPropsWithoutRef<
+  typeof chainRegistry["iota"]["components"]["ConnectButton"]
+>;
 
-export function ConnectButton(props: Record<string, unknown>) {
+type ConnectButtonProps = SuiProps & IotaProps;
+
+export function ConnectButton(props: ConnectButtonProps) {
   const chain = useChain();
-  return chain === "sui" ? (
-    <SuiConnectButton {...props} />
-  ) : (
-    <IotaConnectButton {...props} />
-  );
+  const ButtonComponent = chainRegistry[chain].components.ConnectButton;
+
+  return <ButtonComponent {...props} />;
 }

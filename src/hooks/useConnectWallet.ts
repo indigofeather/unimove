@@ -1,33 +1,24 @@
 "use client";
 
-import { useConnectWallet as useSuiConnectWallet } from "@mysten/dapp-kit";
-import { useConnectWallet as useIotaConnectWallet } from "@iota/dapp-kit";
+import type { ChainId, ChainRegistry } from "../chains";
+import { createChainHookCaller } from "../chains";
 
-import { useChain } from "../context";
+const useConnectWalletInternal = createChainHookCaller("useConnectWallet");
 
-// 精確的類型定義
-export type UnimoveConnectWalletResult<T extends "sui" | "iota"> =
-  T extends "sui"
-    ? ReturnType<typeof useSuiConnectWallet>
-    : ReturnType<typeof useIotaConnectWallet>;
+type HookName = "useConnectWallet";
 
-// 重載函數定義
-export function useConnectWallet(): UnimoveConnectWalletResult<"sui" | "iota">;
-export function useConnectWallet<T extends "sui" | "iota">(
-  chain?: T
-): UnimoveConnectWalletResult<T>;
-export function useConnectWallet<T extends "sui" | "iota">(
-  chain?: T
-): UnimoveConnectWalletResult<T> {
-  const contextChain = useChain();
-  const finalChain = chain || contextChain;
+type HookResult<C extends ChainId> = ReturnType<
+  ChainRegistry[C]["hooks"][HookName]
+>;
 
-  if (finalChain === "sui") {
-    return useSuiConnectWallet() as UnimoveConnectWalletResult<T>;
-  }
+type AnyChainResult = ReturnType<
+  ChainRegistry[ChainId]["hooks"][HookName]
+>;
 
-  return useIotaConnectWallet() as UnimoveConnectWalletResult<T>;
+export function useConnectWallet(): AnyChainResult;
+export function useConnectWallet<C extends ChainId>(chain?: C): HookResult<C>;
+export function useConnectWallet(chain?: ChainId) {
+  return useConnectWalletInternal(chain) as AnyChainResult;
 }
 
-// 向後兼容的類型別名
-export type UseConnectWalletResult = UnimoveConnectWalletResult<"sui" | "iota">;
+export type UnimoveConnectWalletResult<T extends ChainId> = HookResult<T>;

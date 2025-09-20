@@ -1,36 +1,29 @@
 "use client";
 
-import { useSignAndExecuteTransaction as useSuiSignAndExecuteTransaction } from "@mysten/dapp-kit";
-import { useSignAndExecuteTransaction as useIotaSignAndExecuteTransaction } from "@iota/dapp-kit";
+import type { ChainId, ChainRegistry } from "../chains";
+import { createChainHookCaller } from "../chains";
 
-import { useChain } from "../context";
+const useSignAndExecuteTransactionInternal = createChainHookCaller(
+  "useSignAndExecuteTransaction"
+);
 
-// 精確的類型定義
-export type UnimoveSignAndExecuteTransactionResult<T extends "sui" | "iota"> =
-  T extends "sui"
-    ? ReturnType<typeof useSuiSignAndExecuteTransaction>
-    : ReturnType<typeof useIotaSignAndExecuteTransaction>;
+type HookName = "useSignAndExecuteTransaction";
 
-// 重載函數定義
-export function useSignAndExecuteTransaction(): UnimoveSignAndExecuteTransactionResult<
-  "sui" | "iota"
+type HookResult<C extends ChainId> = ReturnType<
+  ChainRegistry[C]["hooks"][HookName]
 >;
-export function useSignAndExecuteTransaction<T extends "sui" | "iota">(
-  chain?: T
-): UnimoveSignAndExecuteTransactionResult<T>;
-export function useSignAndExecuteTransaction<T extends "sui" | "iota">(
-  chain?: T
-): UnimoveSignAndExecuteTransactionResult<T> {
-  const contextChain = useChain();
-  const finalChain = chain || contextChain;
 
-  if (finalChain === "sui") {
-    return useSuiSignAndExecuteTransaction() as UnimoveSignAndExecuteTransactionResult<T>;
-  }
+type AnyChainResult = ReturnType<
+  ChainRegistry[ChainId]["hooks"][HookName]
+>;
 
-  return useIotaSignAndExecuteTransaction() as UnimoveSignAndExecuteTransactionResult<T>;
+export function useSignAndExecuteTransaction(): AnyChainResult;
+export function useSignAndExecuteTransaction<C extends ChainId>(
+  chain?: C
+): HookResult<C>;
+export function useSignAndExecuteTransaction(chain?: ChainId) {
+  return useSignAndExecuteTransactionInternal(chain) as AnyChainResult;
 }
 
-// 向後兼容的類型別名
-export type UseSignAndExecuteTransactionResult =
-  UnimoveSignAndExecuteTransactionResult<"sui" | "iota">;
+export type UnimoveSignAndExecuteTransactionResult<T extends ChainId> = HookResult<T>;
+export type UseSignAndExecuteTransactionResult = AnyChainResult;

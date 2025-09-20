@@ -2,20 +2,20 @@
 
 import {
   type SuiRpcMethods,
-  useSuiClientQueries,
   type UseSuiClientQueryOptions,
 } from "@mysten/dapp-kit";
 import {
   type IotaRpcMethods,
-  useIotaClientQueries,
   type UseIotaClientQueryOptions,
 } from "@iota/dapp-kit";
-import { useMemo } from "react";
 import type { UseQueryResult } from "@tanstack/react-query";
 
-import { useChain } from "../context";
+import { createChainHookCaller } from "../chains";
+import type { ChainId } from "../chains";
 
-type Chain = "sui" | "iota";
+const useClientQueriesInternal = createChainHookCaller("useClientQueries");
+
+type Chain = ChainId;
 type RpcMethods<T extends Chain> = T extends "sui"
   ? SuiRpcMethods
   : IotaRpcMethods;
@@ -83,25 +83,11 @@ export function useClientQueries<
   },
   chain?: TChain
 ): Results {
-  const contextChain = useChain();
-  const finalChain = chain || contextChain;
+  if (chain) {
+    return useClientQueriesInternal({ queries, combine }, chain) as Results;
+  }
 
-  const suiResult = useSuiClientQueries(
-    finalChain === "sui"
-      ? ({ queries, combine } as Parameters<typeof useSuiClientQueries>[0])
-      : ({ queries: [] } as Parameters<typeof useSuiClientQueries>[0])
-  );
-
-  const iotaResult = useIotaClientQueries(
-    finalChain === "iota"
-      ? ({ queries, combine } as Parameters<typeof useIotaClientQueries>[0])
-      : ({ queries: [] } as Parameters<typeof useIotaClientQueries>[0])
-  );
-
-  return useMemo(
-    () => (finalChain === "sui" ? suiResult : iotaResult) as Results,
-    [finalChain, suiResult, iotaResult]
-  );
+  return useClientQueriesInternal({ queries, combine }) as Results;
 }
 
 export type UseClientQueriesResult<

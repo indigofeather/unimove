@@ -1,79 +1,103 @@
 "use client";
 
-import type { PropsWithChildren } from "react";
-import dynamic from "next/dynamic";
+import { useMemo, type PropsWithChildren } from "react";
 import type { IotaClientProviderProps } from "@iota/dapp-kit";
 import type { SuiClientProviderProps } from "@mysten/dapp-kit";
 
+import { chainRegistry } from "../chains";
 import { ChainContext } from "../context";
-import type { Networks } from "../types";
 
-const SuiClientProviderAdapter = dynamic(
-  () =>
-    import("../adapters/SuiClientProvider").then(
-      (m) => m.SuiClientProviderAdapter
-    ),
-  { ssr: false }
-);
-const IotaClientProviderAdapter = dynamic(
-  () =>
-    import("../adapters/IotaClientProvider").then(
-      (m) => m.IotaClientProviderAdapter
-    ),
-  { ssr: false }
-);
+type Networks = Record<string, { url: string }>
 
-type ClientProviderProps = PropsWithChildren<
-  | {
-      chain: "sui";
-      networks: Networks;
-      defaultNetwork?: SuiClientProviderProps<Networks>["defaultNetwork"];
-      onNetworkChange?: SuiClientProviderProps<Networks>["onNetworkChange"];
-    }
-  | {
-      chain: "iota";
-      networks: Networks;
-      defaultNetwork?: IotaClientProviderProps<Networks>["defaultNetwork"];
-      network?: IotaClientProviderProps<Networks>["network"];
-      onNetworkChange?: IotaClientProviderProps<Networks>["onNetworkChange"];
-    }
->;
+type CommonProps = PropsWithChildren<{
+  networks: Networks;
+}>;
+
+type SuiProps = CommonProps & {
+  chain: "sui";
+  defaultNetwork?: SuiClientProviderProps<Networks>["defaultNetwork"];
+  onNetworkChange?: SuiClientProviderProps<Networks>["onNetworkChange"];
+};
+
+type IotaProps = CommonProps & {
+  chain: "iota";
+  defaultNetwork?: IotaClientProviderProps<Networks>["defaultNetwork"];
+  network?: IotaClientProviderProps<Networks>["network"];
+  onNetworkChange?: IotaClientProviderProps<Networks>["onNetworkChange"];
+};
+
+type ClientProviderProps = SuiProps | IotaProps;
+
+function createProviderKey(chain: string, networks: Networks) {
+  try {
+    return `${chain}-${JSON.stringify(networks)}`;
+  } catch {
+    return `${chain}`;
+  }
+}
 
 export function ClientProvider(props: ClientProviderProps) {
-  // 使用 key 來強制重新掛載，避免狀態混亂
-  const providerKey = `${props.chain}-${JSON.stringify(props.networks)}`;
+  const { chain, networks, children } = props;
 
-  if (props.chain === "sui") {
-    const { networks, defaultNetwork, onNetworkChange, children } = props;
+  const networkConfig = useMemo(() => {
+    if (chain === "sui") {
+      return chainRegistry.sui.providers.createNetworkConfig(networks)
+        .networkConfig;
+    }
+
+    return chainRegistry.iota.providers.createNetworkConfig(networks)
+      .networkConfig;
+  }, [chain, networks]);
+
+  const providerKey = createProviderKey(chain, networks);
+
+  if (chain === "sui") {
+    const { defaultNetwork, onNetworkChange } = props;
+    const ProviderComponent = chainRegistry.sui.providers.ClientProvider;
+
+    const providerProps: Record<string, unknown> = {
+      networks: networkConfig,
+    };
+
+    if (typeof defaultNetwork !== "undefined") {
+      providerProps.defaultNetwork = defaultNetwork;
+    }
+
+    if (onNetworkChange) {
+      providerProps.onNetworkChange = onNetworkChange;
+    }
 
     return (
       <ChainContext.Provider value="sui">
-        <SuiClientProviderAdapter
-          key={providerKey}
-          networks={networks}
-          defaultNetwork={defaultNetwork}
-          onNetworkChange={onNetworkChange}
-        >
+        <ProviderComponent key={providerKey} {...providerProps}>
           {children}
-        </SuiClientProviderAdapter>
+        </ProviderComponent>
       </ChainContext.Provider>
     );
   }
 
-  const { networks, defaultNetwork, network, onNetworkChange, children } =
-    props;
+  const { defaultNetwork, network, onNetworkChange } = props;
+  const ProviderComponent = chainRegistry.iota.providers.ClientProvider;
+
+  const providerProps: Record<string, unknown> = {
+    networks: networkConfig,
+  };
+
+  if (typeof network !== "undefined") {
+    providerProps.network = network;
+  } else if (typeof defaultNetwork !== "undefined") {
+    providerProps.defaultNetwork = defaultNetwork;
+  }
+
+  if (onNetworkChange) {
+    providerProps.onNetworkChange = onNetworkChange;
+  }
 
   return (
     <ChainContext.Provider value="iota">
-      <IotaClientProviderAdapter
-        key={providerKey}
-        networks={networks}
-        defaultNetwork={defaultNetwork}
-        network={network}
-        onNetworkChange={onNetworkChange}
-      >
+      <ProviderComponent key={providerKey} {...providerProps}>
         {children}
-      </IotaClientProviderAdapter>
+      </ProviderComponent>
     </ChainContext.Provider>
   );
 }

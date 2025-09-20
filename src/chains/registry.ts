@@ -1,0 +1,116 @@
+"use client";
+
+import {
+  ConnectButton as SuiConnectButton,
+  ConnectModal as SuiConnectModal,
+  SuiClientProvider,
+  WalletProvider as SuiWalletProvider,
+  createNetworkConfig as createSuiNetworkConfig,
+  useAccounts as useSuiAccounts,
+  useAutoConnectWallet as useSuiAutoConnectWallet,
+  useConnectWallet as useSuiConnectWallet,
+  useCurrentAccount as useSuiCurrentAccount,
+  useCurrentWallet as useSuiCurrentWallet,
+  useDisconnectWallet as useSuiDisconnectWallet,
+  useSuiClient,
+  useSuiClientInfiniteQuery,
+  useSuiClientMutation,
+  useSuiClientQueries,
+  useSuiClientQuery,
+  useSignAndExecuteTransaction as useSuiSignAndExecuteTransaction,
+  useSignPersonalMessage as useSuiSignPersonalMessage,
+  useSignTransaction as useSuiSignTransaction,
+  useSwitchAccount as useSuiSwitchAccount,
+  useWallets as useSuiWallets,
+} from "@mysten/dapp-kit";
+import {
+  ConnectButton as IotaConnectButton,
+  ConnectModal as IotaConnectModal,
+  IotaClientProvider,
+  WalletProvider as IotaWalletProvider,
+  createNetworkConfig as createIotaNetworkConfig,
+  useAccounts as useIotaAccounts,
+  useAutoConnectWallet as useIotaAutoConnectWallet,
+  useConnectWallet as useIotaConnectWallet,
+  useCurrentAccount as useIotaCurrentAccount,
+  useCurrentWallet as useIotaCurrentWallet,
+  useDisconnectWallet as useIotaDisconnectWallet,
+  useIotaClient,
+  useIotaClientInfiniteQuery,
+  useIotaClientMutation,
+  useIotaClientQueries,
+  useIotaClientQuery,
+  useSignAndExecuteTransaction as useIotaSignAndExecuteTransaction,
+  useSignPersonalMessage as useIotaSignPersonalMessage,
+  useSignTransaction as useIotaSignTransaction,
+  useSwitchAccount as useIotaSwitchAccount,
+  useWallets as useIotaWallets,
+} from "@iota/dapp-kit";
+
+import type { SupportedChain } from "../context";
+
+export const chainRegistry = {
+  sui: {
+    id: "sui" as const satisfies SupportedChain,
+    hooks: {
+      useClient: useSuiClient,
+      useClientQuery: useSuiClientQuery,
+      useClientInfiniteQuery: useSuiClientInfiniteQuery,
+      useClientMutation: useSuiClientMutation,
+      useClientQueries: useSuiClientQueries,
+      useAccounts: useSuiAccounts,
+      useAutoConnectWallet: useSuiAutoConnectWallet,
+      useConnectWallet: useSuiConnectWallet,
+      useCurrentAccount: useSuiCurrentAccount,
+      useCurrentWallet: useSuiCurrentWallet,
+      useDisconnectWallet: useSuiDisconnectWallet,
+      useSignAndExecuteTransaction: useSuiSignAndExecuteTransaction,
+      useSignPersonalMessage: useSuiSignPersonalMessage,
+      useSignTransaction: useSuiSignTransaction,
+      useSwitchAccount: useSuiSwitchAccount,
+      useWallets: useSuiWallets,
+    },
+    components: {
+      ConnectButton: SuiConnectButton,
+      ConnectModal: SuiConnectModal,
+    },
+    providers: {
+      ClientProvider: SuiClientProvider,
+      WalletProvider: SuiWalletProvider,
+      createNetworkConfig: createSuiNetworkConfig,
+    },
+  },
+  iota: {
+    id: "iota" as const satisfies SupportedChain,
+    hooks: {
+      useClient: useIotaClient,
+      useClientQuery: useIotaClientQuery,
+      useClientInfiniteQuery: useIotaClientInfiniteQuery,
+      useClientMutation: useIotaClientMutation,
+      useClientQueries: useIotaClientQueries,
+      useAccounts: useIotaAccounts,
+      useAutoConnectWallet: useIotaAutoConnectWallet,
+      useConnectWallet: useIotaConnectWallet,
+      useCurrentAccount: useIotaCurrentAccount,
+      useCurrentWallet: useIotaCurrentWallet,
+      useDisconnectWallet: useIotaDisconnectWallet,
+      useSignAndExecuteTransaction: useIotaSignAndExecuteTransaction,
+      useSignPersonalMessage: useIotaSignPersonalMessage,
+      useSignTransaction: useIotaSignTransaction,
+      useSwitchAccount: useIotaSwitchAccount,
+      useWallets: useIotaWallets,
+    },
+    components: {
+      ConnectButton: IotaConnectButton,
+      ConnectModal: IotaConnectModal,
+    },
+    providers: {
+      ClientProvider: IotaClientProvider,
+      WalletProvider: IotaWalletProvider,
+      createNetworkConfig: createIotaNetworkConfig,
+    },
+  },
+} as const;
+
+export type ChainRegistry = typeof chainRegistry;
+export type ChainId = keyof ChainRegistry;

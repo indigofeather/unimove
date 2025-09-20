@@ -1,32 +1,21 @@
 "use client";
 
-import { useSuiClient } from "@mysten/dapp-kit";
-import { useIotaClient } from "@iota/dapp-kit";
+import type { ChainId, ChainRegistry } from "../chains";
+import { createChainHookCaller } from "../chains";
 
-import { useChain } from "../context";
+const useClientInternal = createChainHookCaller("useClient");
 
-// 精確的類型定義
-export type UnimoveClientHookResult<T extends "sui" | "iota"> = T extends "sui"
-  ? ReturnType<typeof useSuiClient>
-  : ReturnType<typeof useIotaClient>;
+type HookName = "useClient";
 
-// 重載函數定義
-export function useClient(): UnimoveClientHookResult<"sui" | "iota">;
-export function useClient<T extends "sui" | "iota">(
-  chain?: T
-): UnimoveClientHookResult<T>;
-export function useClient<T extends "sui" | "iota">(
-  chain?: T
-): UnimoveClientHookResult<T> {
-  const contextChain = useChain();
-  const finalChain = chain || contextChain;
+type HookResult<C extends ChainId> = ReturnType<ChainRegistry[C]["hooks"][HookName]>;
 
-  if (finalChain === "sui") {
-    return useSuiClient() as UnimoveClientHookResult<T>;
-  }
+type AnyChainResult = ReturnType<ChainRegistry[ChainId]["hooks"][HookName]>;
 
-  return useIotaClient() as UnimoveClientHookResult<T>;
+export function useClient(): AnyChainResult;
+export function useClient<C extends ChainId>(chain?: C): HookResult<C>;
+export function useClient(chain?: ChainId) {
+  return useClientInternal(chain) as AnyChainResult;
 }
 
-// 向後兼容的類型別名
-export type UseClientResult = UnimoveClientHookResult<"sui" | "iota">;
+export type UnimoveClientHookResult<T extends ChainId> = HookResult<T>;
+export type UseClientResult = AnyChainResult;

@@ -2,20 +2,20 @@
 
 import {
   type SuiRpcMethods,
-  useSuiClientMutation,
   type UseSuiClientMutationOptions,
 } from "@mysten/dapp-kit";
 import {
   type IotaRpcMethods,
-  useIotaClientMutation,
   type UseIotaClientMutationOptions,
 } from "@iota/dapp-kit";
-import { useMemo } from "react";
 import type { UseMutationResult } from "@tanstack/react-query";
 
-import { useChain } from "../context";
+import { createChainHookCaller } from "../chains";
+import type { ChainId } from "../chains";
 
-type Chain = "sui" | "iota";
+const useClientMutationInternal = createChainHookCaller("useClientMutation");
+
+type Chain = ChainId;
 type RpcMethods<T extends Chain> = T extends "sui"
   ? SuiRpcMethods
   : IotaRpcMethods;
@@ -29,18 +29,14 @@ type MethodInfo<
   TC extends Chain,
   TM extends keyof RpcMethods<TC>,
 > = RpcMethods<TC>[TM & keyof RpcMethods<TC>];
-type MethodParams<TC extends Chain, TM extends keyof RpcMethods<TC>> =
-  MethodInfo<TC, TM> extends {
-    params: infer P;
-  }
-    ? P
-    : never;
-type MethodResult<TC extends Chain, TM extends keyof RpcMethods<TC>> =
-  MethodInfo<TC, TM> extends {
-    result: infer R;
-  }
-    ? R
-    : never;
+type MethodParams<
+  TC extends Chain,
+  TM extends keyof RpcMethods<TC>,
+> = MethodInfo<TC, TM> extends { params: infer P } ? P : never;
+type MethodResult<
+  TC extends Chain,
+  TM extends keyof RpcMethods<TC>,
+> = MethodInfo<TC, TM> extends { result: infer R } ? R : never;
 
 export type UnimoveClientMutationResult<
   T extends Chain,
@@ -61,20 +57,18 @@ export function useClientMutation(
   options?: unknown,
   chain?: Chain
 ): UnimoveClientMutationResult<Chain, any> {
-  const contextChain = useChain();
-  const finalChain = chain || contextChain;
+  if (chain) {
+    return useClientMutationInternal(
+      method,
+      options,
+      chain
+    ) as UnimoveClientMutationResult<Chain, any>;
+  }
 
-  const suiResult = useSuiClientMutation(method as any, options as any);
-
-  const iotaResult = useIotaClientMutation(method as any, options as any);
-
-  return useMemo(
-    () =>
-      (finalChain === "sui"
-        ? suiResult
-        : iotaResult) as UnimoveClientMutationResult<Chain, any>,
-    [finalChain, suiResult, iotaResult]
-  );
+  return useClientMutationInternal(
+    method,
+    options
+  ) as UnimoveClientMutationResult<Chain, any>;
 }
 
 export type UseClientMutationResult<

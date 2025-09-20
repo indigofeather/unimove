@@ -46,21 +46,3 @@ export type { UnimoveSwitchAccountResult } from "./hooks/useSwitchAccount";
 export type { UnimoveClientInfiniteQueryResult } from "./hooks/useClientInfiniteQuery";
 export type { UnimoveClientMutationResult } from "./hooks/useClientMutation";
 export type { UnimoveClientQueriesResult } from "./hooks/useClientQueries";
-
-// Themes
-export * from "./themes";
-
-// Types
-export type {
-  Networks,
-  ChainType,
-  NetworkName,
-  UnimoveClientConfig,
-  UnimoveGetCoinsParams,
-  UnimoveGetObjectParams,
-  UnimoveNetwork,
-  UnimoveKeypairConfig,
-  UnimoveTransactionConfig,
-  UnimoveStructTag,
-  UnimoveBcsOptions,
-} from "./types";

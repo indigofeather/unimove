@@ -1,37 +1,26 @@
 "use client";
 
-import { useDisconnectWallet as useSuiDisconnectWallet } from "@mysten/dapp-kit";
-import { useDisconnectWallet as useIotaDisconnectWallet } from "@iota/dapp-kit";
+import type { ChainId, ChainRegistry } from "../chains";
+import { createChainHookCaller } from "../chains";
 
-import { useChain } from "../context";
+const useDisconnectWalletInternal = createChainHookCaller(
+  "useDisconnectWallet"
+);
 
-// 精確的類型定義
-export type UnimoveDisconnectWalletResult<T extends "sui" | "iota"> =
-  T extends "sui"
-    ? ReturnType<typeof useSuiDisconnectWallet>
-    : ReturnType<typeof useIotaDisconnectWallet>;
+type HookName = "useDisconnectWallet";
 
-// 重載函數定義
-export function useDisconnectWallet(): UnimoveDisconnectWalletResult<
-  "sui" | "iota"
+type HookResult<C extends ChainId> = ReturnType<
+  ChainRegistry[C]["hooks"][HookName]
 >;
-export function useDisconnectWallet<T extends "sui" | "iota">(
-  chain?: T
-): UnimoveDisconnectWalletResult<T>;
-export function useDisconnectWallet<T extends "sui" | "iota">(
-  chain?: T
-): UnimoveDisconnectWalletResult<T> {
-  const contextChain = useChain();
-  const finalChain = chain || contextChain;
 
-  if (finalChain === "sui") {
-    return useSuiDisconnectWallet() as UnimoveDisconnectWalletResult<T>;
-  }
+type AnyChainResult = ReturnType<
+  ChainRegistry[ChainId]["hooks"][HookName]
+>;
 
-  return useIotaDisconnectWallet() as UnimoveDisconnectWalletResult<T>;
+export function useDisconnectWallet(): AnyChainResult;
+export function useDisconnectWallet<C extends ChainId>(chain?: C): HookResult<C>;
+export function useDisconnectWallet(chain?: ChainId) {
+  return useDisconnectWalletInternal(chain) as AnyChainResult;
 }
 
-// 向後兼容的類型別名
-export type UseDisconnectWalletResult = UnimoveDisconnectWalletResult<
-  "sui" | "iota"
->;
+export type UnimoveDisconnectWalletResult<T extends ChainId> = HookResult<T>;

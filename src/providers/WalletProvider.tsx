@@ -1,26 +1,11 @@
 "use client";
 
 import type { PropsWithChildren } from "react";
-import dynamic from "next/dynamic";
-import type { WalletProviderProps as SuiWalletProviderProps } from "@mysten/dapp-kit";
 import type { WalletProviderProps as IotaWalletProviderProps } from "@iota/dapp-kit";
+import type { WalletProviderProps as SuiWalletProviderProps } from "@mysten/dapp-kit";
 
+import { chainRegistry } from "../chains";
 import { useChain } from "../context";
-
-const SuiWalletProviderAdapter = dynamic(
-  () =>
-    import("../adapters/SuiWalletProvider").then(
-      (m) => m.SuiWalletProviderAdapter
-    ),
-  { ssr: false }
-);
-const IotaWalletProviderAdapter = dynamic(
-  () =>
-    import("../adapters/IotaWalletProvider").then(
-      (m) => m.IotaWalletProviderAdapter
-    ),
-  { ssr: false }
-);
 
 type WalletProviderProps = PropsWithChildren<
   Omit<SuiWalletProviderProps, "children"> &
@@ -29,17 +14,22 @@ type WalletProviderProps = PropsWithChildren<
 
 export function WalletProvider({ children, ...props }: WalletProviderProps) {
   const chain = useChain();
+  const ProviderComponent = chainRegistry[chain].providers.WalletProvider;
 
-  // 使用 key 來確保切換鏈時正確重新掛載
-  const walletKey = `wallet-${chain}`;
+  const { slushWallet, ...rest } = props as {
+    slushWallet?: unknown;
+  } & Record<string, unknown>;
 
-  return chain === "sui" ? (
-    <SuiWalletProviderAdapter key={walletKey} {...props}>
+  const providerKey = `wallet-${chain}`;
+
+  const providerProps =
+    chain === "sui"
+      ? ({ ...rest, slushWallet } as Record<string, unknown>)
+      : (rest as Record<string, unknown>);
+
+  return (
+    <ProviderComponent key={providerKey} {...providerProps}>
       {children}
-    </SuiWalletProviderAdapter>
-  ) : (
-    <IotaWalletProviderAdapter key={walletKey} {...props}>
-      {children}
-    </IotaWalletProviderAdapter>
+    </ProviderComponent>
   );
 }

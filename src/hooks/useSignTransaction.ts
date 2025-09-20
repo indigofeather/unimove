@@ -1,37 +1,24 @@
 "use client";
 
-import { useSignTransaction as useSuiSignTransaction } from "@mysten/dapp-kit";
-import { useSignTransaction as useIotaSignTransaction } from "@iota/dapp-kit";
+import type { ChainId, ChainRegistry } from "../chains";
+import { createChainHookCaller } from "../chains";
 
-import { useChain } from "../context";
+const useSignTransactionInternal = createChainHookCaller("useSignTransaction");
 
-// 精確的類型定義
-export type UnimoveSignTransactionResult<T extends "sui" | "iota"> =
-  T extends "sui"
-    ? ReturnType<typeof useSuiSignTransaction>
-    : ReturnType<typeof useIotaSignTransaction>;
+type HookName = "useSignTransaction";
 
-// 重載函數定義
-export function useSignTransaction(): UnimoveSignTransactionResult<
-  "sui" | "iota"
+type HookResult<C extends ChainId> = ReturnType<
+  ChainRegistry[C]["hooks"][HookName]
 >;
-export function useSignTransaction<T extends "sui" | "iota">(
-  chain?: T
-): UnimoveSignTransactionResult<T>;
-export function useSignTransaction<T extends "sui" | "iota">(
-  chain?: T
-): UnimoveSignTransactionResult<T> {
-  const contextChain = useChain();
-  const finalChain = chain || contextChain;
 
-  if (finalChain === "sui") {
-    return useSuiSignTransaction() as UnimoveSignTransactionResult<T>;
-  }
+type AnyChainResult = ReturnType<
+  ChainRegistry[ChainId]["hooks"][HookName]
+>;
 
-  return useIotaSignTransaction() as UnimoveSignTransactionResult<T>;
+export function useSignTransaction(): AnyChainResult;
+export function useSignTransaction<C extends ChainId>(chain?: C): HookResult<C>;
+export function useSignTransaction(chain?: ChainId) {
+  return useSignTransactionInternal(chain) as AnyChainResult;
 }
 
-// 向後兼容的類型別名
-export type UseSignTransactionResult = UnimoveSignTransactionResult<
-  "sui" | "iota"
->;
+export type UnimoveSignTransactionResult<T extends ChainId> = HookResult<T>;

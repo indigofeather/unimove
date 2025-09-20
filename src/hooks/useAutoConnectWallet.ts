@@ -1,32 +1,26 @@
 "use client";
 
-import { useAutoConnectWallet as useSuiAutoConnectWallet } from "@mysten/dapp-kit";
-import { useAutoConnectWallet as useIotaAutoConnectWallet } from "@iota/dapp-kit";
+import type { ChainId, ChainRegistry } from "../chains";
+import { createChainHookCaller } from "../chains";
 
-import { useChain } from "../context";
+const useAutoConnectWalletInternal = createChainHookCaller(
+  "useAutoConnectWallet"
+);
 
-// 精確的類型定義
-export type UnimoveAutoConnectWalletResult<T extends "sui" | "iota"> =
-  T extends "sui"
-    ? ReturnType<typeof useSuiAutoConnectWallet>
-    : ReturnType<typeof useIotaAutoConnectWallet>;
+type HookName = "useAutoConnectWallet";
 
-// 重載函數定義
-export function useAutoConnectWallet(): UnimoveAutoConnectWalletResult<
-  "sui" | "iota"
+type HookResult<C extends ChainId> = ReturnType<
+  ChainRegistry[C]["hooks"][HookName]
 >;
-export function useAutoConnectWallet<T extends "sui" | "iota">(
-  chain?: T
-): UnimoveAutoConnectWalletResult<T>;
-export function useAutoConnectWallet<T extends "sui" | "iota">(
-  chain?: T
-): UnimoveAutoConnectWalletResult<T> {
-  const contextChain = useChain();
-  const finalChain = chain || contextChain;
 
-  if (finalChain === "sui") {
-    return useSuiAutoConnectWallet() as UnimoveAutoConnectWalletResult<T>;
-  }
+type AnyChainResult = ReturnType<
+  ChainRegistry[ChainId]["hooks"][HookName]
+>;
 
-  return useIotaAutoConnectWallet() as UnimoveAutoConnectWalletResult<T>;
+export function useAutoConnectWallet(): AnyChainResult;
+export function useAutoConnectWallet<C extends ChainId>(chain?: C): HookResult<C>;
+export function useAutoConnectWallet(chain?: ChainId) {
+  return useAutoConnectWalletInternal(chain) as AnyChainResult;
 }
+
+export type UnimoveAutoConnectWalletResult<T extends ChainId> = HookResult<T>;

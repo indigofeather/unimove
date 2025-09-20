@@ -2,19 +2,20 @@
 
 import {
   type SuiRpcMethods,
-  useSuiClientQuery,
   type UseSuiClientQueryOptions,
 } from "@mysten/dapp-kit";
 import {
   type IotaRpcMethods,
-  useIotaClientQuery,
   type UseIotaClientQueryOptions,
 } from "@iota/dapp-kit";
 import type { UseQueryResult } from "@tanstack/react-query";
 
-import { useChain } from "../context";
+import { createChainHookCaller } from "../chains";
+import type { ChainId } from "../chains";
 
-type Chain = "sui" | "iota";
+const useClientQueryInternal = createChainHookCaller("useClientQuery");
+
+type Chain = ChainId;
 type RpcMethods<T extends Chain> = T extends "sui"
   ? SuiRpcMethods
   : IotaRpcMethods;
@@ -29,18 +30,14 @@ type MethodInfo<
   TC extends Chain,
   TM extends keyof RpcMethods<TC>,
 > = RpcMethods<TC>[TM & keyof RpcMethods<TC>];
-type MethodParams<TC extends Chain, TM extends keyof RpcMethods<TC>> =
-  MethodInfo<TC, TM> extends {
-    params: infer P;
-  }
-    ? P
-    : never;
-type MethodResult<TC extends Chain, TM extends keyof RpcMethods<TC>> =
-  MethodInfo<TC, TM> extends {
-    result: infer R;
-  }
-    ? R
-    : never;
+type MethodParams<
+  TC extends Chain,
+  TM extends keyof RpcMethods<TC>,
+> = MethodInfo<TC, TM> extends { params: infer P } ? P : never;
+type MethodResult<
+  TC extends Chain,
+  TM extends keyof RpcMethods<TC>,
+> = MethodInfo<TC, TM> extends { result: infer R } ? R : never;
 
 export type UnimoveClientQueryResult<TData> = UseQueryResult<TData, Error>;
 
@@ -66,33 +63,22 @@ export function useClientQuery<
 export function useClientQuery(
   method: string,
   params?: unknown,
-  options: Record<string, unknown> = {},
+  options?: Record<string, unknown>,
   chain?: Chain
 ): UnimoveClientQueryResult<unknown> {
-  const contextChain = useChain();
-  const finalChain = chain || contextChain;
-  const { enabled = true, ...restOptions } = options as { enabled?: boolean };
-
-  if (finalChain === "sui") {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    return useSuiClientQuery(
-      method as any,
-      params as any,
-      {
-        ...restOptions,
-        enabled,
-      } as any
+  if (chain) {
+    return useClientQueryInternal(
+      method,
+      params,
+      options,
+      chain
     ) as UnimoveClientQueryResult<unknown>;
   }
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  return useIotaClientQuery(
-    method as any,
-    params as any,
-    {
-      ...restOptions,
-      enabled,
-    } as any
+  return useClientQueryInternal(
+    method,
+    params,
+    options
   ) as UnimoveClientQueryResult<unknown>;
 }
 

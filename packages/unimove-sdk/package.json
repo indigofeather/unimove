@@ -1,6 +1,6 @@
 {
   "name": "unimove-sdk",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "A comprehensive sdk for building cross-chain app on Sui and IOTA with runtime unified APIs.",
   "author": {
     "name": "Lance He",
@@ -51,12 +51,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/indigofeather/unimove-dapp-kit.git"
+    "url": "https://github.com/indigofeather/unimove.git"
   },
   "bugs": {
-    "url": "https://github.com/indigofeather/unimove-dapp-kit/issues"
+    "url": "https://github.com/indigofeather/unimove/issues"
   },
-  "homepage": "https://github.com/indigofeather/unimove-dapp-kit#readme",
+  "homepage": "https://github.com/indigofeather/unimove#readme",
   "scripts": {
     "lint": "eslint",
     "lint:fix": "eslint --fix",

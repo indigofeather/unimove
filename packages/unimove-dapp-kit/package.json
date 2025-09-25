@@ -59,12 +59,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/indigofeather/unimove-dapp-kit.git"
+    "url": "https://github.com/indigofeather/unimove-tools.git"
   },
   "bugs": {
-    "url": "https://github.com/indigofeather/unimove-dapp-kit/issues"
+    "url": "https://github.com/indigofeather/unimove-tools/issues"
   },
-  "homepage": "https://github.com/indigofeather/unimove-dapp-kit#readme",
+  "homepage": "https://github.com/indigofeather/unimove-tools#readme",
   "scripts": {
     "lint": "eslint",
     "lint:fix": "eslint --fix",

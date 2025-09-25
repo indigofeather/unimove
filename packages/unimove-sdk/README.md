@@ -1,5 +1,7 @@
 # Unimove SDK
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/indigofeather/unimove-sdk)
+
 **Unimove SDK** wraps the official Sui (`@mysten/sui`) and IOTA (`@iota/iota-sdk`) packages behind a single registry so you can swap chains without changing imports. It mirrors the same registry pattern used in `unimove-dapp-kit`, but targets low-level SDK modules instead of React hooks.
 
 ## Highlights

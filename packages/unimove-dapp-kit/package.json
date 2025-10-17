@@ -1,6 +1,6 @@
 {
   "name": "unimove-dapp-kit",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "A comprehensive dApp kit for building cross-chain dApps on Sui and IOTA with runtime chain switching, built-in UI components, and unified APIs.",
   "author": {
     "name": "Lance He",
@@ -27,9 +27,9 @@
     "next": "^14.0.0 || ^15.0.0",
     "react": "^18.2.0 || ^19.0.0",
     "react-dom": "^18.2.0 || ^19.0.0",
-    "@tanstack/react-query": "^5.0.0",
-    "@mysten/dapp-kit": "^0.18.0",
-    "@mysten/sui": "^1.38.0",
+    "@tanstack/react-query": "^5.90.0",
+    "@mysten/dapp-kit": "^0.19.5",
+    "@mysten/sui": "^1.43.0",
     "@iota/dapp-kit": "^0.5.3",
     "@iota/iota-sdk": "^1.6.1"
   },
@@ -76,21 +76,21 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
-    "@eslint/js": "^9.36.0",
-    "@types/react": "^19.1.13",
-    "@types/react-dom": "^19.1.9",
-    "@typescript-eslint/eslint-plugin": "^8.44.0",
-    "@typescript-eslint/parser": "^8.44.0",
-    "eslint": "^9.36.0",
+    "@eslint/js": "^9.38.0",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "@typescript-eslint/eslint-plugin": "^8.46.1",
+    "@typescript-eslint/parser": "^8.46.1",
+    "eslint": "^9.38.0",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-react": "^7.37.5",
-    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-hooks": "^7.0.0",
     "prettier": "^3.6.2",
     "tsup": "^8.5.0",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.3"
   },
   "overrides": {
-    "@mysten/dapp-kit": "^0.18.0",
+    "@mysten/dapp-kit": "^0.19.5",
     "@iota/dapp-kit": "^0.5.3"
   }
 }

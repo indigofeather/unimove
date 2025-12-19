@@ -7,28 +7,46 @@ import type { WalletProviderProps as SuiWalletProviderProps } from "@mysten/dapp
 import { chainRegistry } from "../chains";
 import { useChain } from "../context";
 
-type WalletProviderProps = PropsWithChildren<
-  Omit<SuiWalletProviderProps, "children"> &
-    Omit<IotaWalletProviderProps, "children">
->;
+type SuiWalletProps = Omit<SuiWalletProviderProps, "children">;
+type IotaWalletProps = Omit<IotaWalletProviderProps, "children">;
+
+type WalletProviderProps = PropsWithChildren<SuiWalletProps | IotaWalletProps>;
 
 export function WalletProvider({ children, ...props }: WalletProviderProps) {
   const chain = useChain();
-  const ProviderComponent = chainRegistry[chain].providers.WalletProvider;
-
-  const { slushWallet, ...rest } = props as {
-    slushWallet?: unknown;
-  } & Record<string, unknown>;
-
   const providerKey = `wallet-${chain}`;
 
-  const providerProps =
-    chain === "sui"
-      ? ({ ...rest, slushWallet } as Record<string, unknown>)
-      : (rest as Record<string, unknown>);
+  if (chain === "sui") {
+    const ProviderComponent = chainRegistry.sui.providers.WalletProvider;
+    const { slushWallet, chain: _chain, ...rest } = props as SuiWalletProps & {
+      slushWallet?: unknown;
+      chain?: unknown;
+    };
+
+    return (
+      <ProviderComponent
+        key={providerKey}
+        {...(rest as SuiWalletProps)}
+        slushWallet={slushWallet}
+      >
+        {children}
+      </ProviderComponent>
+    );
+  }
+
+  const ProviderComponent = chainRegistry.iota.providers.WalletProvider;
+  const { chain: walletChain, slushWallet: _slushWallet, ...rest } =
+    props as IotaWalletProps & {
+      chain?: unknown;
+      slushWallet?: unknown;
+    };
 
   return (
-    <ProviderComponent key={providerKey} {...providerProps}>
+    <ProviderComponent
+      key={providerKey}
+      {...(rest as IotaWalletProps)}
+      chain={walletChain as IotaWalletProps["chain"]}
+    >
       {children}
     </ProviderComponent>
   );

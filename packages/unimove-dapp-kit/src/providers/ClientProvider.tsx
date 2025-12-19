@@ -1,34 +1,51 @@
 "use client";
 
-import { useMemo, type PropsWithChildren } from "react";
-import type { IotaClientProviderProps } from "@iota/dapp-kit";
-import type { SuiClientProviderProps } from "@mysten/dapp-kit";
+import { type PropsWithChildren } from "react";
+import type {
+  IotaClientProviderProps,
+  NetworkConfig as IotaNetworkConfig,
+} from "@iota/dapp-kit";
+import type {
+  SuiClientProviderProps,
+  NetworkConfig as SuiNetworkConfig,
+} from "@mysten/dapp-kit";
+import type { SuiClient } from "@mysten/sui/client";
 
 import { chainRegistry } from "../chains";
 import { ChainContext } from "../context";
 
-type Networks = Record<string, { url: string }>
+type SuiNetworks = Record<string, SuiNetworkConfig | SuiClient>;
+type IotaClientInstance = ReturnType<
+  NonNullable<IotaClientProviderProps<any>["createClient"]>
+>;
+type IotaNetworks = Record<string, IotaNetworkConfig | IotaClientInstance>;
 
-type CommonProps = PropsWithChildren<{
-  networks: Networks;
+type CommonProps<TNetworks> = PropsWithChildren<{
+  networks?: TNetworks;
 }>;
 
-type SuiProps = CommonProps & {
+type SuiProps = CommonProps<SuiNetworks> & {
   chain: "sui";
-  defaultNetwork?: SuiClientProviderProps<Networks>["defaultNetwork"];
-  onNetworkChange?: SuiClientProviderProps<Networks>["onNetworkChange"];
+  createClient?: SuiClientProviderProps<SuiNetworks>["createClient"];
+  defaultNetwork?: SuiClientProviderProps<SuiNetworks>["defaultNetwork"];
+  network?: SuiClientProviderProps<SuiNetworks>["network"];
+  onNetworkChange?: SuiClientProviderProps<SuiNetworks>["onNetworkChange"];
 };
 
-type IotaProps = CommonProps & {
+type IotaProps = CommonProps<IotaNetworks> & {
   chain: "iota";
-  defaultNetwork?: IotaClientProviderProps<Networks>["defaultNetwork"];
-  network?: IotaClientProviderProps<Networks>["network"];
-  onNetworkChange?: IotaClientProviderProps<Networks>["onNetworkChange"];
+  createClient?: IotaClientProviderProps<IotaNetworks>["createClient"];
+  defaultNetwork?: IotaClientProviderProps<IotaNetworks>["defaultNetwork"];
+  network?: IotaClientProviderProps<IotaNetworks>["network"];
+  onNetworkChange?: IotaClientProviderProps<IotaNetworks>["onNetworkChange"];
 };
 
 type ClientProviderProps = SuiProps | IotaProps;
 
-function createProviderKey(chain: string, networks: Networks) {
+function createProviderKey(
+  chain: string,
+  networks?: Record<string, unknown>
+) {
   try {
     return `${chain}-${JSON.stringify(networks)}`;
   } catch {
@@ -39,27 +56,25 @@ function createProviderKey(chain: string, networks: Networks) {
 export function ClientProvider(props: ClientProviderProps) {
   const { chain, networks, children } = props;
 
-  const networkConfig = useMemo(() => {
-    if (chain === "sui") {
-      return chainRegistry.sui.providers.createNetworkConfig(networks)
-        .networkConfig;
-    }
-
-    return chainRegistry.iota.providers.createNetworkConfig(networks)
-      .networkConfig;
-  }, [chain, networks]);
-
   const providerKey = createProviderKey(chain, networks);
 
   if (chain === "sui") {
-    const { defaultNetwork, onNetworkChange } = props;
+    const { createClient, defaultNetwork, network, onNetworkChange } = props;
     const ProviderComponent = chainRegistry.sui.providers.ClientProvider;
 
-    const providerProps: Record<string, unknown> = {
-      networks: networkConfig,
-    };
+    const providerProps: Record<string, unknown> = {};
 
-    if (typeof defaultNetwork !== "undefined") {
+    if (typeof networks !== "undefined") {
+      providerProps.networks = networks;
+    }
+
+    if (typeof createClient !== "undefined") {
+      providerProps.createClient = createClient;
+    }
+
+    if (typeof network !== "undefined") {
+      providerProps.network = network;
+    } else if (typeof defaultNetwork !== "undefined") {
       providerProps.defaultNetwork = defaultNetwork;
     }
 
@@ -76,12 +91,18 @@ export function ClientProvider(props: ClientProviderProps) {
     );
   }
 
-  const { defaultNetwork, network, onNetworkChange } = props;
+  const { createClient, defaultNetwork, network, onNetworkChange } = props;
   const ProviderComponent = chainRegistry.iota.providers.ClientProvider;
 
-  const providerProps: Record<string, unknown> = {
-    networks: networkConfig,
-  };
+  const providerProps: Record<string, unknown> = {};
+
+  if (typeof networks !== "undefined") {
+    providerProps.networks = networks;
+  }
+
+  if (typeof createClient !== "undefined") {
+    providerProps.createClient = createClient;
+  }
 
   if (typeof network !== "undefined") {
     providerProps.network = network;

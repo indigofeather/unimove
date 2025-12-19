@@ -6,11 +6,7 @@ export type {
   NormalizedKeypairs,
 } from "./sdk";
 
-export {
-  sdkRegistry,
-  isChainId,
-  getModule,
-} from "./chains";
+export { sdkRegistry, isChainId, getModule } from "./chains";
 
 export { createSdk } from "./sdk";
 
@@ -36,3 +32,4 @@ export const keypairs = createModuleAccessor("keypairs");
 export const keypairEd25519 = createKeypairAccessor("ed25519");
 export const keypairSecp256k1 = createKeypairAccessor("secp256k1");
 export const keypairSecp256r1 = createKeypairAccessor("secp256r1");
+export const keypairPasskey = createKeypairAccessor("passkey");

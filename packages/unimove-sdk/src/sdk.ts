@@ -18,6 +18,7 @@ const getZkloginNamespace = createModuleAccessor("zklogin");
 const getKeypairEd25519Namespace = createKeypairAccessor("ed25519");
 const getKeypairSecp256k1Namespace = createKeypairAccessor("secp256k1");
 const getKeypairSecp256r1Namespace = createKeypairAccessor("secp256r1");
+const getKeypairPasskeyNamespace = createKeypairAccessor("passkey");
 
 type ChainModules<C extends ChainId> = SdkRegistry[C]["modules"];
 
@@ -70,6 +71,7 @@ export type NormalizedKeypairs<C extends ChainId> = {
   ed25519: KeypairsNamespace<C>["ed25519"];
   secp256k1: KeypairsNamespace<C>["secp256k1"];
   secp256r1: KeypairsNamespace<C>["secp256r1"];
+  passkey: KeypairsNamespace<C>["passkey"];
 };
 
 type ZkloginModule<C extends ChainId> = C extends "sui"
@@ -135,6 +137,7 @@ function normalizeKeypairs<C extends ChainId>(
     ed25519: getKeypairEd25519Namespace(chain),
     secp256k1: getKeypairSecp256k1Namespace(chain),
     secp256r1: getKeypairSecp256r1Namespace(chain),
+    passkey: getKeypairPasskeyNamespace(chain),
   } as NormalizedKeypairs<C>;
 }
 

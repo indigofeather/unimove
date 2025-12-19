@@ -66,11 +66,12 @@ const client = new sdk.client.Client({
   url: sdk.client.getFullnodeUrl("testnet"),
 });
 const tx = new sdk.transactions.Transaction();
+const signer = sdk.keypairs.ed25519.Ed25519Keypair.generate();
 tx.moveCall({
   target: "0x2::coin::transfer",
   arguments: [tx.object("0x..."), tx.pure.u64(1n), tx.pure.address("0x...")],
 });
-await client.signAndExecuteTransaction({ transaction: tx });
+await client.signAndExecuteTransaction({ transaction: tx, signer });
 
 // Keypair helpers maintain their native methods
 const kp = sdk.keypairs.ed25519.Ed25519Keypair.fromSecretKey("...");
@@ -80,8 +81,9 @@ const kp = sdk.keypairs.ed25519.Ed25519Keypair.fromSecretKey("...");
 // Switching chains only changes the factory input
 const iota = createSdk("iota");
 
-const faucetResponse = await iota.faucet.requestFunds({
-  targetAddress: "0x...",
+const faucetResponse = await iota.faucet.requestIotaFromFaucetV1({
+  host: iota.faucet.getFaucetHost("testnet"),
+  recipient: "0x...",
 });
 
 // Access IOTA-only network helpers through the normalized shape
@@ -109,7 +111,7 @@ const tx = new Transaction();
 - `createSdk("sui" | "iota")` – returns a typed `NormalizedSdk<C>` object containing:
   - `client` – `{ Client, Transport, TransportError, JsonRpcError, getFullnodeUrl, isClient, network }`
   - core namespaces (`bcs`, `transactions`, `utils`, `verify`, `cryptography`, `multisig`, `faucet`, `zklogin?`)
-  - `keypairs` – `{ ed25519, secp256k1, secp256r1 }`
+  - `keypairs` – `{ ed25519, secp256k1, secp256r1, passkey }`
   - `getModule(name)` – dynamic access without exposing chain-specific export names.
 
 The `network` field is `undefined` on Sui and exposes IOTA-only helpers when the chain is `"iota"`.
@@ -134,6 +136,7 @@ Keypair shortcuts:
 - `keypairEd25519("sui" | "iota")`
 - `keypairSecp256k1("sui" | "iota")`
 - `keypairSecp256r1("sui" | "iota")`
+- `keypairPasskey("sui" | "iota")`
 
 ### Utilities & types
 

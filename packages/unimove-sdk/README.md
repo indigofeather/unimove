@@ -7,6 +7,7 @@
 ## Highlights
 
 - 🔗 **Unified surface** – access every SDK namespace (`client`, `transactions`, `utils`, etc.) with a single call.
+- 🧩 **Unified Types** – unified types for `MoveStruct`, `Transaction`, `ObjectData`, and more, supporting both Sui and IOTA with a single type name.
 - 🧠 **Type-aware helpers** – the returned module is typed to the selected chain.
 - 🔁 **Runtime switching** – instantiate `createSdk("sui" | "iota")` whenever you need a different chain.
 - 🧰 **Keypair helpers** – grab chain-specific keypair constructors with `keypairEd25519()` and friends.
@@ -116,6 +117,27 @@ const tx = new Transaction();
 
 The `network` field is `undefined` on Sui and exposes IOTA-only helpers when the chain is `"iota"`.
 
+### Unified Types
+
+The package exports unified types that are compatible with both Sui and IOTA. This allows you to write functions that accept data from either chain without manual type casting.
+
+- **Move**: `MoveStruct`, `MoveValue`
+- **Objects**: `ObjectData`, `ObjectResponse`, `ObjectRef`, `OwnedObjectRef`
+- **Transactions**: `Transaction`, `TransactionBlockResponse`, `DryRunTransactionBlockResponse`, `TransactionArgument`, `TransactionResult`, `TransactionObjectInput`
+- **Data**: `Event`, `Checkpoint`, `Balance`, `CoinStruct`, `CoinMetadata`
+- **Pagination**: `PaginatedCoins`, `PaginatedEvents`, `PaginatedObjectsResponse`, `PaginatedTransactionResponse`
+- **Params**: `MoveCallParams`
+
+Example:
+```ts
+import { MoveStruct, ObjectData } from "unimove-sdk";
+
+function processData(data: ObjectData) {
+  // Works for both Sui and IOTA object data
+  console.log(data.objectId);
+}
+```
+
 ### Module accessors (optional)
 
 If you want the raw namespaces without normalization, the package still exports per-module accessors. Each requires an explicit `chain` argument:
@@ -143,7 +165,7 @@ Keypair shortcuts:
 - `isChainId(value)` – runtime guard for user input.
 - `getModule(chain, name)` – dynamic lookup inside the registry.
 - `sdkRegistry` – direct access to the underlying constant registry.
-- Type exports: `ChainId`, `ModuleName`, `SdkRegistry`, `NormalizedSdk`, `NormalizedClientModule`, `NormalizedKeypairs`.
+- Type exports: `ChainId`, `ModuleName`, `SdkRegistry`, `NormalizedSdk`, `NormalizedClientModule`, `NormalizedKeypairs`, and all **Unified Types** listed above.
 
 ---
 

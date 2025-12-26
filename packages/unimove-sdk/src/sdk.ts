@@ -1,6 +1,6 @@
 import {
-  createModuleAccessor,
   createKeypairAccessor,
+  createModuleAccessor,
   getModule,
 } from "./chains";
 import type { ChainId, ModuleName, SdkRegistry } from "./chains";
